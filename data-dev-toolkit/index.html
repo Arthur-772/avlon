@@ -1,0 +1,1663 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据开发工具箱</title>
+<style>
+:root {
+  --bg: #f5f6f8; --surface: #fff; --surface-alt: #f9fafb;
+  --border: #e1e4e8; --border-light: #edf0f3;
+  --text: #1a1d26; --text-secondary: #5a6270; --text-muted: #8b94a3;
+  --primary: #3160cc; --primary-hover: #254db3; --primary-light: #e8f0fe;
+  --success: #178653; --success-light: #e6f5ed;
+  --warning: #c96f06; --warning-light: #fef6e7;
+  --danger: #d93025; --danger-light: #fce8e6;
+  --code-bg: #1e2128; --code-text: #c9cdd4;
+  --code-err-bg: #2c1c1c; --code-err-text: #f2b4b4;
+  --radius-sm: 5px; --radius-md: 8px; --radius-lg: 10px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+  --font-sans: -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  --font-mono: "JetBrains Mono","Cascadia Code","SF Mono","Consolas",monospace;
+  --fs-xs: 11px; --fs-sm: 12px; --fs-base: 13px; --fs-lg: 14px; --fs-xl: 18px;
+  --sp-xs: 4px; --sp-sm: 8px; --sp-md: 12px; --sp-lg: 16px; --sp-xl: 20px;
+}
+[data-theme="dark"] {
+  --bg: #0d1117; --surface: #161b22; --surface-alt: #1c2230;
+  --border: #30363d; --border-light: #21262d;
+  --text: #e6edf3; --text-secondary: #8b949e; --text-muted: #6e7681;
+  --primary: #58a6ff; --primary-hover: #79baff; --primary-light: #1a2a3f;
+  --success: #3fb950; --success-light: #1a2e1e;
+  --warning: #d29922; --warning-light: #2e2210;
+  --danger: #f85149; --danger-light: #2e1416;
+  --code-bg: #0d1117; --code-text: #e6edf3;
+  --code-err-bg: #1c0f0f; --code-err-text: #ffa198;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.4);
+}
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html,body {
+  height:100%; font-family:var(--font-sans); font-size:var(--fs-base);
+  color:var(--text); background:var(--bg); line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.app {
+  display:flex; flex-direction:column; max-width:1480px;
+  margin:0 auto; padding:var(--sp-lg) var(--sp-xl);
+  height:100%; min-height:0;
+}
+.app-header {
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0; margin-bottom:var(--sp-md);
+}
+.app-title {
+  font-size:var(--fs-xl); font-weight:700;
+  color:var(--text); letter-spacing:-0.3px;
+}
+.header-right { display:flex; align-items:center; gap:var(--sp-sm); }
+.app-version {
+  font-size:var(--fs-xs); font-weight:500; color:var(--text-muted);
+  background:var(--surface-alt); padding:2px 10px;
+  border-radius:20px; border:1px solid var(--border-light);
+}
+/* Theme toggle button */
+.btn-theme {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:32px; height:32px; border:1px solid var(--border);
+  border-radius:var(--radius-md); background:var(--surface);
+  cursor:pointer; font-size:15px; line-height:1;
+  transition:all 0.15s ease; color:var(--text-secondary);
+}
+.btn-theme:hover { background:var(--surface-alt); border-color:var(--primary); color:var(--primary); }
+.tab-bar {
+  display:flex; gap:2px; flex-shrink:0; background:var(--surface);
+  border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+  border:1px solid var(--border); border-bottom:none;
+  padding:var(--sp-xs) var(--sp-sm) 0; overflow-x:auto;
+}
+.tab-btn {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:9px 18px; border:none; background:transparent;
+  border-radius:var(--radius-sm) var(--radius-sm) 0 0;
+  cursor:pointer; font-size:var(--fs-sm); font-weight:600;
+  color:var(--text-secondary); transition:all 0.15s ease;
+  white-space:nowrap;
+}
+.tab-btn:hover { color:var(--text); background:rgba(128,128,128,0.06); }
+.tab-btn.active {
+  color:var(--primary); background:var(--primary-light);
+  box-shadow:0 -1px 3px rgba(49,96,204,0.08);
+}
+.tab-btn .tab-icon { font-size:15px; line-height:1; }
+.tab-btn .tab-badge {
+  font-size:10px; font-weight:500; padding:1px 7px;
+  border-radius:10px; background:var(--border-light);
+  color:var(--text-muted);
+}
+.tab-btn.active .tab-badge {
+  background:rgba(49,96,204,0.12); color:var(--primary);
+}
+.tab-content {
+  flex:1; min-height:0; background:var(--surface);
+  border-radius:0 0 var(--radius-lg) var(--radius-lg);
+  border:1px solid var(--border); border-top:none;
+  box-shadow:var(--shadow-md); overflow:hidden;
+  display:flex; flex-direction:column;
+}
+.tab-pane {
+  display:none; flex:1; min-height:0;
+  padding:var(--sp-lg); overflow:auto;
+}
+.tab-pane.active { display:flex; flex-direction:column; }
+.pane-grid {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:var(--sp-lg); flex:1; min-height:0;
+}
+.panel {
+  display:flex; flex-direction:column; min-height:0;
+  background:var(--surface); border:1px solid var(--border-light);
+  border-radius:var(--radius-md); overflow:hidden;
+  transition:box-shadow 0.15s ease;
+}
+.panel:focus-within { box-shadow:0 0 0 2px rgba(49,96,204,0.1); }
+.panel-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px var(--sp-md); background:var(--surface-alt);
+  border-bottom:1px solid var(--border-light); flex-shrink:0;
+  font-size:var(--fs-sm); font-weight:600; color:var(--text);
+}
+.panel-header .badge {
+  font-size:10px; font-weight:500; padding:1px 8px;
+  border-radius:10px; background:var(--primary-light);
+  color:var(--primary);
+}
+.panel-body { flex:1; min-height:0; position:relative; }
+.panel-body textarea {
+  display:block; width:100%; height:100%; min-height:150px;
+  border:none; outline:none; resize:none; padding:var(--sp-md);
+  font-family:var(--font-mono); font-size:var(--fs-sm);
+  line-height:1.65; color:var(--text); background:var(--surface);
+  transition:background 0.15s ease;
+}
+.panel-body textarea:focus { background:var(--surface-alt); }
+.panel-body textarea::placeholder { color:var(--text-muted); }
+.result-display {
+  width:100%; height:100%; min-height:150px; max-height:450px;
+  padding:var(--sp-md); font-family:var(--font-mono);
+  font-size:var(--fs-sm); line-height:1.65;
+  color:var(--code-text); background:var(--code-bg);
+  border-radius:0; overflow:auto;
+  white-space:pre-wrap; word-break:break-word;
+}
+.result-display.error { color:var(--code-err-text); background:var(--code-err-bg); }
+.result-display:empty::after {
+  content:"等待输入…"; color:var(--text-muted); font-style:italic;
+}
+.toolbar {
+  display:flex; flex-wrap:wrap; align-items:center; gap:6px;
+  padding:var(--sp-sm) var(--sp-md); background:var(--surface-alt);
+  border-top:1px solid var(--border-light); flex-shrink:0;
+}
+.partition-row {
+  display:flex; align-items:center; gap:var(--sp-sm);
+  padding:var(--sp-sm) var(--sp-md); background:var(--surface-alt);
+  border-top:1px solid var(--border-light); flex-shrink:0; flex-wrap:wrap;
+}
+.partition-row label {
+  font-size:var(--fs-sm); font-weight:600; color:var(--text);
+  display:flex; align-items:center; gap:3px;
+}
+.partition-row input[type="text"] {
+  width:90px; padding:4px 8px; border:1px solid var(--border);
+  border-radius:var(--radius-sm); font-size:var(--fs-sm);
+  font-family:var(--font-mono); background:var(--surface);
+  color:var(--text); transition:border-color 0.15s ease;
+}
+.partition-row input[type="text"]:focus {
+  outline:none; border-color:var(--primary);
+  box-shadow:0 0 0 2px rgba(49,96,204,0.12);
+}
+.partition-row .spacer { flex:1; }
+.btn {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:5px 14px; font-size:var(--fs-sm); font-weight:600;
+  border:none; border-radius:var(--radius-sm); cursor:pointer;
+  transition:all 0.12s ease; line-height:1.4;
+  font-family:var(--font-sans);
+}
+.btn:active { transform:scale(0.97); }
+.btn-primary { background:var(--primary); color:#fff; }
+.btn-primary:hover { background:var(--primary-hover); }
+.btn-secondary {
+  background:var(--surface); color:var(--text);
+  border:1px solid var(--border);
+}
+.btn-secondary:hover { background:var(--surface-alt); border-color:var(--text-muted); }
+.btn-success { background:var(--success); color:#fff; }
+.btn-success:hover { filter:brightness(1.1); }
+.btn-warning { background:var(--warning); color:#fff; }
+.btn-warning:hover { filter:brightness(1.1); }
+.btn-danger { background:var(--text-secondary); color:#fff; }
+.btn-danger:hover { background:var(--text-muted); }
+.btn-copy {
+  padding:4px 12px; font-size:11px; background:transparent;
+  border:1px solid rgba(255,255,255,0.18); color:rgba(255,255,255,0.7);
+  border-radius:var(--radius-sm); cursor:pointer;
+  transition:all 0.15s ease; align-self:flex-end;
+  margin-top:var(--sp-sm); flex-shrink:0;
+}
+.btn-copy:hover {
+  background:rgba(255,255,255,0.1);
+  border-color:rgba(255,255,255,0.35); color:#fff;
+}
+.status-bar {
+  font-size:var(--fs-xs); color:var(--text-secondary);
+  padding:2px var(--sp-md); min-height:20px; flex-shrink:0;
+  line-height:1.5;
+}
+.footer-bar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:var(--sp-xs) var(--sp-md); font-size:10px;
+  color:var(--text-muted); border-top:1px solid var(--border-light);
+  flex-shrink:0; gap:var(--sp-sm);
+}
+.format-tag {
+  font-size:10px; font-weight:500; padding:2px 8px;
+  border-radius:10px; background:var(--primary-light);
+  color:var(--primary); display:inline-flex;
+  align-items:center; gap:3px;
+}
+/* dialect badge */
+.dialect-tag {
+  font-size:10px; font-weight:600; padding:2px 8px;
+  border-radius:10px; background:var(--warning-light);
+  color:var(--warning); display:inline-flex; align-items:center; gap:3px;
+  border:1px solid rgba(201,111,6,0.2);
+}
+.toast {
+  position:fixed; bottom:24px; right:24px;
+  background:#1a1d26; color:#fff; padding:10px 18px;
+  border-radius:var(--radius-md); font-size:var(--fs-sm);
+  font-weight:500; opacity:0; transform:translateY(6px);
+  transition:opacity 0.2s ease,transform 0.2s ease;
+  pointer-events:none; z-index:1000; box-shadow:var(--shadow-md);
+}
+.toast.show { opacity:1; transform:translateY(0); }
+@media(max-width:900px) {
+  .pane-grid { grid-template-columns:1fr; }
+  .app { padding:var(--sp-sm) var(--sp-md); }
+}
+@media(max-width:600px) {
+  .tab-bar { flex-wrap:wrap; }
+  .tab-btn { font-size:11px; padding:7px 12px; }
+  .toolbar { flex-direction:column; align-items:stretch; }
+  .toolbar .btn { justify-content:center; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="app-header">
+    <h1 class="app-title">数据开发工具箱</h1>
+    <div class="header-right">
+      <button class="btn-theme" id="themeToggle" title="切换主题">🌙</button>
+      <span class="app-version">v1.1</span>
+    </div>
+  </div>
+  <nav class="tab-bar" id="tabBar">
+    <button class="tab-btn active" data-tab="hive"><span class="tab-icon">🗂️</span> Hive 建表<span class="tab-badge">Parquet</span></button>
+    <button class="tab-btn" data-tab="ddl"><span class="tab-icon">🔄</span> DDL ↔ SELECT<span class="tab-badge">互转</span></button>
+    <button class="tab-btn" data-tab="format"><span class="tab-icon">✨</span> SQL 格式化<span class="tab-badge">美化</span></button>
+  </nav>
+  <div class="tab-content" id="tabContent">
+    <!-- Tab: Hive 建表 -->
+    <div class="tab-pane active" id="pane-hive">
+      <div class="pane-grid">
+        <div class="panel">
+          <div class="panel-header"><span>📝 SQL 输入</span><span class="badge">DDL / SELECT</span></div>
+          <div class="panel-body"><textarea id="hiveInput" placeholder="粘贴 CREATE TABLE 或 SELECT 语句…">SELECT biz_date, user_id, order_id, amount FROM orders</textarea></div>
+          <div class="partition-row">
+            <label>📂 分区字段</label>
+            <input type="text" id="hivePartition" value="dt" placeholder="例如: dt, p_date">
+            <span class="spacer"></span>
+            <span class="format-tag">PARQUET</span>
+            <span class="dialect-tag">Hive / Spark SQL</span>
+            <button class="btn btn-primary" id="hiveParseBtn">⚡ 生成建表</button>
+            <button class="btn btn-danger" id="hiveClearBtn">清空</button>
+            <button class="btn btn-secondary" id="hiveExampleBtn">📄 示例</button>
+          </div>
+          <div class="status-bar" id="hiveStatus"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span>📌 建表语句 (Parquet)</span><span class="badge" id="hiveColCount">0 列</span></div>
+          <div class="panel-body"><div class="result-display" id="hiveResult"></div><button class="btn-copy" id="hiveCopyBtn">📋 复制</button></div>
+          <div class="footer-bar"><span>表名: <strong id="hiveTableName">—</strong></span><span>存储格式: PARQUET</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- Tab: DDL ↔ SELECT -->
+    <div class="tab-pane" id="pane-ddl">
+      <div class="pane-grid">
+        <div class="panel">
+          <div class="panel-header"><span>📝 输入</span><span class="badge">DDL / SELECT</span></div>
+          <div class="panel-body"><textarea id="ddlInput" placeholder="粘贴 CREATE TABLE 或 SELECT 语句…">SELECT biz_date, user_id, order_id, amount FROM orders</textarea></div>
+          <div class="toolbar">
+            <button class="btn btn-primary" id="ddlToSelectBtn">➡️ DDL → SELECT (标准)</button>
+            <button class="btn btn-secondary" id="ddlToAliasBtn">➡️ DDL → SELECT (AS别名)</button>
+            <button class="btn btn-success" id="selectToDdlBtn">⬅️ SELECT → CREATE</button>
+            <button class="btn btn-danger" id="ddlClearBtn">清空</button>
+            <span class="spacer" style="flex:1"></span>
+            <span class="format-tag" id="ddlExampleTag" style="cursor:pointer;font-size:11px" title="加载示例">📥 示例</span>
+          </div>
+          <div class="status-bar" id="ddlStatus"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span>📌 转换结果</span><span class="badge" id="ddlResultCount">—</span></div>
+          <div class="panel-body"><div class="result-display" id="ddlResult"></div><button class="btn-copy" id="ddlCopyBtn">📋 复制</button></div>
+          <div class="footer-bar"><span>💡 Hive / Spark SQL 语法</span><span>Ctrl+Enter</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- Tab: SQL 格式化 -->
+    <div class="tab-pane" id="pane-format">
+      <div class="pane-grid">
+        <div class="panel">
+          <div class="panel-header"><span>📝 SQL 输入</span><span class="badge">SELECT 语句</span></div>
+          <div class="panel-body"><textarea id="formatInput" placeholder="粘贴 SQL 语句…">select biz_date, user_id, order_id, amount from orders</textarea></div>
+          <div class="toolbar">
+            <button class="btn btn-primary" id="formatBtn">✨ 格式化</button>
+            <button class="btn btn-danger" id="formatClearBtn">清空</button>
+            <button class="btn btn-secondary" id="formatExampleBtn">📄 示例</button>
+            <span class="spacer" style="flex:1"></span>
+            <span class="dialect-tag">Hive / Spark SQL</span>
+          </div>
+          <div class="status-bar" id="formatStatus"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span>📌 格式化结果</span><span class="badge" id="formatResultCount">—</span></div>
+          <div class="panel-body"><div class="result-display" id="formatResult"></div><button class="btn-copy" id="formatCopyBtn">📋 复制</button></div>
+          <div class="footer-bar"><span>💡 支持 SET / CREATE VIEW / INSERT / SELECT / JOIN / WHERE / GROUP BY / ORDER BY / 子查询</span><span>Ctrl+Enter</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+<script>
+"use strict";
+// ===================== Theme Manager =====================
+(function(){
+  var stored = localStorage.getItem("ddt-theme");
+  if (stored === "dark" || (!stored && window.matchMedia("(prefers-color-scheme:dark)").matches)) {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+  function updateIcon() {
+    var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+    var btn = document.getElementById("themeToggle");
+    if (btn) btn.textContent = isDark ? "☀️" : "🌙";
+  }
+  updateIcon();
+  document.addEventListener("DOMContentLoaded", updateIcon);
+  window.addEventListener("load", function(){
+    var btn = document.getElementById("themeToggle");
+    if (!btn) return;
+    btn.addEventListener("click", function(){
+      var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+      if (isDark) {
+        document.documentElement.removeAttribute("data-theme");
+        localStorage.setItem("ddt-theme", "light");
+      } else {
+        document.documentElement.setAttribute("data-theme", "dark");
+        localStorage.setItem("ddt-theme", "dark");
+      }
+      updateIcon();
+    });
+  });
+})();
+
+// ===================== Core Utilities =====================
+function showToast(msg){
+  var el = document.getElementById("toast");
+  el.textContent = msg; el.classList.add("show");
+  clearTimeout(el._tid);
+  el._tid = setTimeout(function(){ el.classList.remove("show"); }, 1800);
+}
+async function copyToClipboard(text){
+  if (!text || text.trim() === "") return false;
+  try { await navigator.clipboard.writeText(text); return true; }
+  catch(e) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.left = "-9999px";
+    document.body.appendChild(ta); ta.select();
+    document.execCommand("copy"); ta.remove(); return true;
+  }
+}
+function debounce(fn, ms){
+  var t; return function(){
+    var args = arguments, ctx = this;
+    clearTimeout(t); t = setTimeout(function(){ fn.apply(ctx, args); }, ms);
+  };
+}
+function $(id){ return document.getElementById(id); }
+
+// ===================== SQL Tokenizer =====================
+function splitFields(content){
+  var out = [], cur = "", depth = 0, inQ = false, qc = "";
+  for (var i = 0; i < content.length; i++){
+    var ch = content[i];
+    if (!inQ && (ch === "'" || ch === '"' || ch === "`")){ inQ = true; qc = ch; }
+    else if (inQ && ch === qc) {
+      var bs = 0, j = i - 1;
+      while (j >= 0 && content[j] === "\\") { bs++; j--; }
+      if (bs % 2 === 0) inQ = false;
+    }
+    if (!inQ){
+      if (ch === "(") depth++;
+      else if (ch === ")") depth--;
+      else if (ch === "," && depth === 0){
+        var t = cur.trim();
+        if (t && !t.startsWith("--")) out.push(t);
+        cur = ""; continue;
+      }
+    }
+    cur += ch;
+  }
+  var last = cur.trim();
+  if (last && !last.startsWith("--")) out.push(last);
+  return out;
+}
+
+function findMatchingParen(str, start){
+  var d = 0, inQ = false, qc = "";
+  for (var i = start; i < str.length; i++){
+    var ch = str[i];
+    if (!inQ && (ch === "'" || ch === '"' || ch === "`")){ inQ = true; qc = ch; }
+    else if (inQ && ch === qc) {
+      var bs = 0, j = i - 1;
+      while (j >= 0 && str[j] === "\\") { bs++; j--; }
+      if (bs % 2 === 0) inQ = false;
+    }
+    if (!inQ){
+      if (ch === "(") d++;
+      else if (ch === ")") { d--; if (d === 0) return i; }
+    }
+  }
+  return -1;
+}
+
+// ===================== Field Translator =====================
+var DICT = {
+  id:"编号", name:"名称", code:"编码", type:"类型", status:"状态",
+  level:"等级", flag:"标记",
+  user_id:"用户编号", order_id:"订单编号", product_id:"产品编号",
+  category_id:"类别编号", parent_id:"父级编号", task_id:"任务编号",
+  job_id:"作业编号", batch_id:"批次编号", run_id:"运行编号",
+  event_id:"事件编号", session_id:"会话编号", request_id:"请求编号",
+  trace_id:"追踪编号", ref_id:"引用编号",
+  email:"邮箱", phone:"电话", mobile:"手机号", address:"地址",
+  city:"城市", province:"省份", country:"国家", zip:"邮编",
+  age:"年龄", gender:"性别", birth_date:"出生日期", birthday:"生日",
+  full_name:"全名", first_name:"名字", last_name:"姓氏",
+  nick_name:"昵称", display_name:"显示名称",
+  created_at:"创建时间", updated_at:"更新时间", deleted_at:"删除时间",
+  expired_at:"过期时间", start_time:"开始时间", end_time:"结束时间",
+  create_time:"创建时间", update_time:"更新时间", modify_time:"修改时间",
+  delete_time:"删除时间", login_time:"登录时间", logout_time:"登出时间",
+  register_time:"注册时间", publish_time:"发布时间", approve_time:"审核时间",
+  process_time:"处理时间", finish_time:"完成时间", pay_time:"支付时间",
+  ship_time:"发货时间", delivery_time:"交付时间", receive_time:"收货时间",
+  return_time:"退货时间", refund_time:"退款时间", operate_time:"操作时间",
+  audit_time:"审计时间",
+  dt:"日期分区", p_date:"分区日期", part_date:"分区日期",
+  log_date:"日志日期", stat_date:"统计日期", report_date:"报表日期",
+  load_date:"加载日期", etl_date:"ETL日期",
+  amount:"金额", price:"价格", total_amount:"总金额", balance:"余额",
+  discount:"折扣", tax:"税费", rate:"汇率", currency:"货币",
+  payment:"支付方式", is_paid:"是否支付", paid:"是否支付",
+  is_active:"是否激活", active:"是否激活", is_deleted:"是否删除",
+  is_valid:"是否有效", is_verified:"是否验证", verified:"是否验证",
+  is_enabled:"是否启用",
+  score:"得分", quantity:"数量", qty:"数量", count:"计数",
+  description:"描述", desc:"描述", remark:"备注", notes:"备注",
+  comment:"评论", title:"标题", content:"内容", url:"链接",
+  image:"图片", avatar:"头像", department:"部门", role:"角色",
+  permission:"权限", token:"令牌", session:"会话", ip:"IP地址",
+  host:"主机", port:"端口", date:"日期", time:"时间",
+  datetime:"日期时间", timestamp:"时间戳", year:"年份", month:"月份",
+  day:"日", week:"周", quarter:"季度", company:"公司",
+  organization:"组织", group:"组", team:"团队", manager:"经理",
+  employee:"员工", staff:"员工", parent:"父级", children:"子级",
+  path:"路径", weight:"权重", priority:"优先级", sort:"排序",
+  index:"索引", options:"选项", config:"配置", setting:"设置",
+  locale:"区域", language:"语言", timezone:"时区"
+};
+
+function translateFieldToChinese(name){
+  var key = name.toLowerCase().replace(/[`'"]/g, "");
+  if (DICT[key]) return DICT[key];
+  var spaced = key.replace(/_/g, " ");
+  for (var k in DICT) {
+    if (k.indexOf("_") !== -1 && k.replace(/_/g, " ") === spaced) return DICT[k];
+  }
+  for (var k2 in DICT) {
+    if (k2.indexOf("_") !== -1 && (key.endsWith("_" + k2) || key === k2)) return DICT[k2];
+  }
+  return key.replace(/_/g, " ").replace(/\b\w/g, function(c){ return c.toUpperCase(); });
+}
+
+// ===================== DDL Parser =====================
+function parseDDLStruct(ddl){
+  var clean = ddl.replace(/\n/g," ").replace(/\s+/g," ").trim();
+  var tm = clean.match(/CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?((?:`[^`]+`|[\w]+)(?:\s*\.\s*(?:`[^`]+`|[\w]+))*)/i);
+  var tableName = tm ? tm[1].replace(/`/g,"").replace(/\s+/g,"") : "UNKNOWN_TABLE";
+  var start = clean.indexOf("(");
+  if (start === -1) return null;
+  var end = findMatchingParen(clean, start);
+  if (end === -1) return null;
+  var rest = clean.substring(end+1);
+  var tc = rest.match(/COMMENT\s*'([^']*)'/i);
+  var tableComment = tc ? tc[1] : "";
+  var colText = clean.substring(start+1, end);
+  var rawFields = splitFields(colText);
+  var fields = [];
+  rawFields.forEach(function(line){
+    if (line.match(/^(PRIMARY|UNIQUE|KEY|INDEX|CONSTRAINT|FOREIGN)/i)) return;
+    var m = line.match(/`?(\w+)`?\s+(\w+(?:\(\d+(?:,\d+)?\))?)(?:\s+COMMENT\s+'([^']*)')?/i);
+    if (m) {
+      fields.push({name:m[1], type:m[2].toUpperCase(), comment:m[3]||""});
+    } else {
+      var m2 = line.match(/`?(\w+)`?/);
+      if (m2) fields.push({name:m2[1], type:"STRING", comment:""});
+    }
+  });
+  var partitions = [];
+  var pIdx = clean.indexOf("PARTITIONED BY");
+  if (pIdx !== -1) {
+    var ps = clean.indexOf("(", pIdx);
+    if (ps !== -1) {
+      var pe = findMatchingParen(clean, ps);
+      if (pe !== -1) {
+        var pContent = clean.substring(ps+1, pe);
+        var pFields = splitFields(pContent);
+        pFields.forEach(function(line){
+          var m = line.match(/`?(\w+)`?\s+(\w+)(?:\s+COMMENT\s+'([^']*)')?/i);
+          if (m) partitions.push({name:m[1], type:m[2].toUpperCase(), comment:m[3]||""});
+          else {
+            var m2 = line.match(/`?(\w+)`?/);
+            if (m2) partitions.push({name:m2[1], type:"STRING", comment:""});
+          }
+        });
+      }
+    }
+  }
+  return {tableName:tableName, tableComment:tableComment, fields:fields, partitions:partitions};
+}
+
+// ===================== SELECT Parser =====================
+function parseSelectStruct(sql){
+  var clean = sql.replace(/\n/g," ").replace(/\s+/g," ").trim();
+  var sm = clean.match(/SELECT\s+(.*?)\s+FROM\s+([`]?[\w\.]+[`]?|\b\w+\b)/i);
+  if (!sm) return {error:"无法识别 SELECT 语句"};
+  var selectClause = sm[1].trim();
+  var tableName = sm[2].replace(/`/g,"").trim() || "new_table";
+  var parts = splitFields(selectClause);
+  if (!parts.length) return {error:"SELECT 中无字段"};
+  var cols = parts.map(function(f){
+    var raw = f.trim();
+    var asMatch = raw.match(/\s+AS\s+([^\s,]+)\s*$/i);
+    var alias = null, expr = raw;
+    if (asMatch) {
+      alias = asMatch[1].replace(/`/g,"").trim();
+      expr = raw.replace(/\s+AS\s+[^\s,]+$/i,"").trim();
+    } else {
+      var ps = raw.split(/\s+/);
+      if (ps.length > 1) {
+        var last = ps[ps.length-1].replace(/`/g,"");
+        var kw = ["+","-","*","/","%","AND","OR","NOT","FROM","WHERE","ON","JOIN","LEFT","RIGHT","INNER","OUTER","CROSS","FULL"];
+        if (kw.indexOf(last.toUpperCase()) === -1 && !last.includes("(") && !last.includes(")")) {
+          alias = last;
+          expr = ps.slice(0,-1).join(" ");
+        }
+      }
+    }
+    var name = expr.replace(/`/g,"").replace(/['"]/g,"");
+    var fm = name.match(/\(\s*([^)]+?)\s*\)/);
+    if (fm) {
+      var inner = fm[1].trim();
+      if (inner.includes(".")) inner = inner.split(".").pop().trim();
+      name = inner || "column";
+    }
+    if (name.includes(".")) name = name.split(".").pop().trim();
+    if (!name) name = "column";
+    var type = "STRING";
+    var lo = expr.toLowerCase();
+    if (/\b(count|sum|avg|max|min)\s*\(/i.test(lo)) type = "BIGINT";
+    else if (/\bdate\b|\btime\b/i.test(lo)) type = "DATE";
+    else if (/\b(decimal|float|double)\b/i.test(lo)) type = "DECIMAL(10,2)";
+    else if (/\b\w+_id\b|\b\bid\b/i.test(lo) || /\bint\b/i.test(lo)) type = "INT";
+    else if (/\b(price|amount|balance)\b/i.test(lo)) type = "DECIMAL(12,2)";
+    var comment = "";
+    if (alias && /[\u4e00-\u9fa5]/.test(alias)) comment = alias;
+    else comment = translateFieldToChinese(name);
+    return {name:name, type:type, comment:comment};
+  }).filter(function(c){ return c && c.name; });
+  return {tableName:tableName, columns:cols};
+}
+
+// ===================== Hive Engine =====================
+function parseSQLToHive(sqlText){
+  var clean = sqlText.replace(/\n/g," ").replace(/\s+/g," ").trim();
+  if (!clean) return {error:"SQL 为空"};
+  var cr = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?((?:`[^`]+`|[\w]+)(?:\s*\.\s*(?:`[^`]+`|[\w]+))*)\s*\(/i;
+  var cm = clean.match(cr);
+  if (cm) {
+    var tableName = (cm[1]||"unknown_table").replace(/`/g,"").replace(/\s+/g,"");
+    var parenStart = clean.indexOf("(", cm.index + cm[0].length - 1);
+    var parenEnd = findMatchingParen(clean, parenStart);
+    if (parenEnd === -1) return {error:"无法匹配 CREATE TABLE 括号"};
+    var colText = clean.substring(parenStart+1, parenEnd);
+    var defs = splitFields(colText);
+    if (!defs.length) return {error:"未找到列定义"};
+    var cols = defs.map(function(def){
+      var parts = def.trim().split(/\s+/);
+      if (!parts.length) return null;
+      var colName = parts[0].replace(/[`"']/g,"");
+      var colType = "STRING";
+      if (parts.length >= 2) {
+        var typeRaw = parts.slice(1).join(" ");
+        typeRaw = typeRaw
+          .replace(/\bNOT\s+NULL\b/gi,"")
+          .replace(/\bPRIMARY\s+KEY\b/gi,"")
+          .replace(/\bUNIQUE\b/gi,"")
+          .replace(/\bDEFAULT\b\s+[^,)]+/gi,"")
+          .replace(/\bAUTO_INCREMENT\b/gi,"")
+          .replace(/\bCOMMENT\b\s+['"][^'"]*['"]/gi,"")
+          .trim();
+        if (typeRaw.length) {
+          var tm = typeRaw.match(/^([A-Za-z]+)(?:\((\d+(?:,\d+)?)\))?/);
+          if (tm) {
+            var base = tm[1].toUpperCase(), len = tm[2];
+            if (["VARCHAR","CHAR"].indexOf(base) !== -1)
+              colType = len ? base+"("+len+")" : "STRING";
+            else if (base === "DECIMAL" && len) colType = "DECIMAL("+len+")";
+            else if (["INT","BIGINT","SMALLINT","TINYINT"].indexOf(base) !== -1) colType = base;
+            else if (["DATE","DATETIME","TIMESTAMP","TIME"].indexOf(base) !== -1) colType = base;
+            else colType = base;
+          } else {
+            colType = typeRaw.split(" ")[0].toUpperCase() || "STRING";
+          }
+        }
+      }
+      return {name:colName, type:colType, comment:translateFieldToChinese(colName)};
+    }).filter(function(c){ return c && c.name; });
+    if (!cols.length) return {error:"解析列失败"};
+    return {tableName:tableName, columns:cols};
+  }
+  var sr = /SELECT\s+(.*?)\s+FROM\s+([`]?[\w\.]+[`]?|\b\w+\b)/i;
+  var sm = clean.match(sr);
+  if (sm) {
+    var result = parseSelectStruct(sqlText);
+    if (result.error) return result;
+    return {tableName:result.tableName, columns:result.columns};
+  }
+  return {error:"无法识别 SQL，请提供 CREATE TABLE 或 SELECT"};
+}
+
+function generateHiveCreate(tableName, columns, partitionField){
+  if (!columns || !columns.length) return "-- 无列";
+  var partField = (partitionField && partitionField.trim()) || "dt";
+  var normal = columns.filter(function(c){ return c.name !== partField; });
+  var partCol = columns.filter(function(c){ return c.name === partField; })[0];
+  var partComment = partCol ? partCol.comment : translateFieldToChinese(partField);
+  var colDefs = normal.map(function(c){
+    return "    " + c.name + " " + c.type + " COMMENT '" + (c.comment||"") + "'";
+  }).join(",\n");
+  var partDef = "PARTITIONED BY (" + partField + " " +
+    (partCol ? partCol.type : "STRING") + " COMMENT '" + partComment + "')";
+  var serde = "ROW FORMAT SERDE\n" +
+    "  'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'\n" +
+    "STORED AS INPUTFORMAT\n" +
+    "  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'\n" +
+    "OUTPUTFORMAT\n" +
+    "  'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'";
+  return "CREATE TABLE " + tableName + " (\n" + colDefs + "\n)\n" +
+    partDef + "\n" + serde + ";";
+}
+
+// ===================== DDL -> SELECT Converters =====================
+function generateSelectStandard(data){
+  var all = data.fields.concat(data.partitions);
+  var maxLen = 0;
+  all.forEach(function(f){ if(f.name.length > maxLen) maxLen = f.name.length; });
+  var lines = ["SELECT"];
+  all.forEach(function(f, i){
+    var pad = " ".repeat(maxLen - f.name.length + 1);
+    var cmt = f.comment ? " -- " + f.comment : "";
+    lines.push((i===0?"     ":"    ,") + f.name + pad + cmt);
+  });
+  lines.push("FROM " + data.tableName + (data.tableComment ? " -- " + data.tableComment : ""));
+  if (data.partitions.length) {
+    var where = "WHERE " + data.partitions[0].name + " = '${start_dt}'";
+    if (data.partitions.length > 1) where += "\n  AND " + data.partitions[1].name + " = 'value';";
+    else where += ";";
+    lines.push(where);
+  } else {
+    lines[lines.length-1] += ";";
+  }
+  return lines.join("\n");
+}
+
+function generateSelectAlias(data){
+  var all = data.fields.concat(data.partitions);
+  var maxNameLen = 0, maxAliasVLen = 0;
+  all.forEach(function(f){
+    if (f.name.length > maxNameLen) maxNameLen = f.name.length;
+    var alias = f.comment || f.name;
+    var vl = getVisualLength(alias);
+    if (vl > maxAliasVLen) maxAliasVLen = vl;
+  });
+  var lines = ["SELECT"];
+  all.forEach(function(f, i){
+    var alias = f.comment || f.name;
+    var aliasVL = getVisualLength(alias);
+    var namePad = " ".repeat(maxNameLen - f.name.length);
+    var aliasPad = " ".repeat(Math.max(0, maxAliasVLen - aliasVL));
+    var line = (i===0?"     ":"    ,") + f.name + namePad + " AS `" + alias + "`" + aliasPad;
+    lines.push(line);
+  });
+  lines.push("FROM " + data.tableName + (data.tableComment ? " -- " + data.tableComment : ""));
+  if (data.partitions.length) {
+    var where = "WHERE " + data.partitions[0].name + " = '${start_dt}'";
+    if (data.partitions.length > 1) where += "\n  AND " + data.partitions[1].name + " = 'value';";
+    else where += ";";
+    lines.push(where);
+  } else {
+    lines[lines.length-1] += ";";
+  }
+  return lines.join("\n");
+}
+
+// ===================== SQL Formatter (v5) =====================
+// -- Line-by-line preserving formatter (no normalization to one line)
+// -- Fixes: multi-line comments, code loss, CREATE VIEW, INSERT + SELECT, subquery formatting
+
+var KWS = ["SELECT","DISTINCT","FROM","WHERE","AND","OR","NOT","IN","IS","NULL","AS","ON",
+  "JOIN","INNER","LEFT","RIGHT","FULL","OUTER","CROSS","GROUP","BY","HAVING",
+  "ORDER","ASC","DESC","LIMIT","UNION","ALL","CASE","WHEN","THEN","ELSE","END",
+  "EXISTS","BETWEEN","LIKE","CAST","COUNT","SUM","AVG","MIN","MAX","ROW_NUMBER",
+  "PARTITION","OVER","INSERT","INTO","VALUES","UPDATE","DELETE","CREATE",
+  "REPLACE","TEMPORARY","VIEW","TABLE","DROP","ALTER","INDEX","PARTITIONED",
+  "STORED","FORMAT","ROW","SERDE","IF","OVERWRITE","REGEXP","RLIKE",
+  "NOW","INTERVAL","DAY","UNIX_TIMESTAMP","FROM_UNIXTIME","TRUE","FALSE"];
+var KWS_SET = {};
+for (var ki = 0; ki < KWS.length; ki++) KWS_SET[KWS[ki]] = true;
+
+function _isWord(ch){ return /[A-Za-z_]/.test(ch); }
+function _isWordOrNum(ch){ return /[A-Za-z0-9_]/.test(ch); }
+
+function _upperKWText(text){
+  var out = "", wd = "", inQ = false, qc = "", inCmt = false;
+  for (var i = 0; i < text.length; i++) {
+    var ch = text[i];
+    if (!inQ && !inCmt && ch === "-" && i + 1 < text.length && text[i+1] === "-") {
+      if (wd) { out += (KWS_SET[wd.toUpperCase()] ? wd.toUpperCase() : wd); wd = ""; }
+      inCmt = true; out += "--"; i++; continue;
+    }
+    if (inCmt) { out += ch; if (ch === "\n" || ch === "\r") inCmt = false; continue; }
+    if (!inQ && (ch === "'" || ch === '"' || ch === "`")) {
+      if (wd) { out += (KWS_SET[wd.toUpperCase()] ? wd.toUpperCase() : wd); wd = ""; }
+      inQ = true; qc = ch; out += ch; continue;
+    }
+    if (inQ) {
+      out += ch;
+      if (ch === qc) {
+        var bs = 0, j = i - 1;
+        while (j >= 0 && text[j] === "\\") { bs++; j--; }
+        if (bs % 2 === 0) inQ = false;
+      }
+      continue;
+    }
+    if (_isWordOrNum(ch)) { wd += ch; }
+    else {
+      if (wd) { out += (KWS_SET[wd.toUpperCase()] ? wd.toUpperCase() : wd); wd = ""; }
+      out += ch;
+    }
+  }
+  if (wd) out += (KWS_SET[wd.toUpperCase()] ? wd.toUpperCase() : wd);
+  return out;
+}
+
+function _splitBySemi(sql){
+  var stmts = [], cur = "", depth = 0, inQ = false, qc = "";
+  for (var i = 0; i < sql.length; i++) {
+    var ch = sql[i];
+    if (!inQ && (ch === "'" || ch === '"' || ch === "`")) { inQ = true; qc = ch; }
+    else if (inQ && ch === qc) {
+      var bs = 0, j = i - 1;
+      while (j >= 0 && sql[j] === "\\") { bs++; j--; }
+      if (bs % 2 === 0) inQ = false;
+    }
+    if (!inQ) {
+      if (ch === "(") depth++;
+      else if (ch === ")") depth--;
+      else if (ch === ";" && depth === 0) {
+        var t = cur.trim();
+        if (t) stmts.push(t);
+        cur = ""; continue;
+      }
+    }
+    cur += ch;
+  }
+  var last = cur.trim();
+  if (last) stmts.push(last);
+  return stmts;
+}
+
+function _tokenizeSelect(text){
+  var tokens = [];
+  var depth = 0, inQ = false, qc = "";
+  var word = "";
+  function flushWord(){
+    if (!word) return;
+    var u = word.toUpperCase();
+    tokens.push({type: KWS_SET[u] ? "KW" : "ID", text: word, upper: u});
+    word = "";
+  }
+  for (var i = 0; i < text.length; i++) {
+    var ch = text[i];
+    if (!inQ && (ch === "'" || ch === '"' || ch === "`")) {
+      flushWord();
+      inQ = true; qc = ch;
+      var str = ch;
+      for (i++; i < text.length; i++) {
+        str += text[i];
+        if (text[i] === qc) {
+          var bs = 0, j = i - 1;
+          while (j >= 0 && text[j] === "\\") { bs++; j--; }
+          if (bs % 2 === 0) { inQ = false; break; }
+        }
+      }
+      tokens.push({type:"STR", text: str});
+      continue;
+    }
+    if (_isWordOrNum(ch)) { word += ch; continue; }
+    flushWord();
+    if (ch === "-" && i + 1 < text.length && text[i+1] === "-") {
+      var cmt = text.substring(i);
+      var nl = cmt.indexOf("\n");
+      if (nl !== -1) { cmt = cmt.substring(0, nl); i += nl - 1; }
+      else i = text.length - 1;
+      tokens.push({type:"CMT", text: cmt});
+      continue;
+    }
+    tokens.push({type:"CH", text: ch});
+    if (ch === "(") depth++;
+    else if (ch === ")") depth--;
+  }
+  flushWord();
+  return tokens;
+}
+
+function _findTopLevelKWs(tokens){
+  var result = [];
+  var depth = 0;
+  for (var i = 0; i < tokens.length; i++) {
+    var t = tokens[i];
+    if (t.type === "CH") {
+      if (t.text === "(") depth++;
+      else if (t.text === ")") depth--;
+    }
+    if (depth === 0 && t.type === "KW") {
+      var name = t.upper;
+      if (name === "SELECT" || name === "FROM" || name === "WHERE" || name === "HAVING" || name === "LIMIT" || name === "UNION" || name === "JOIN") {
+        result.push({name: name, idx: i});
+        continue;
+      }
+      if (name === "GROUP" || name === "ORDER") {
+        if (i + 1 < tokens.length && tokens[i+1].type === "KW" && tokens[i+1].upper === "BY") {
+          result.push({name: name + " BY", idx: i});
+        }
+        continue;
+      }
+      if (name === "LEFT" || name === "RIGHT" || name === "FULL" || name === "INNER" || name === "OUTER" || name === "CROSS") {
+        var j = i + 1;
+        while (j < tokens.length && tokens[j].type === "KW" && tokens[j].upper !== "JOIN") j++;
+        if (j < tokens.length && tokens[j].upper === "JOIN") {
+          var jn = name + (j > i+1 ? " " + tokens[j-1].upper + " JOIN" : " JOIN");
+          if (j > i+1 && tokens[j-1].upper !== "OUTER") jn = name + " JOIN";
+          result.push({name: jn, idx: i});
+        }
+        continue;
+      }
+    }
+  }
+  return result;
+}
+
+function _rebuild(tokens, start, end){
+  var s = "";
+  for (var i = start; i < end && i < tokens.length; i++) s += tokens[i].text;
+  return s;
+}
+
+function _trimTokens(tokens, start, end){
+  while (start < end && tokens[start].type === "CH" && /\s/.test(tokens[start].text)) start++;
+  while (end > start && tokens[end-1].type === "CH" && /\s/.test(tokens[end-1].text)) end--;
+  return _rebuild(tokens, start, end);
+}
+
+function _fmtFields(bodyStr, indent){
+  var fields = splitFields(bodyStr);
+  var out = [indent + "SELECT"];
+  var maxLen = 0;
+  var parsed = [];
+  for (var fi = 0; fi < fields.length; fi++) {
+    var f = fields[fi].trim();
+    var ci = -1, inQ2 = false, qc2 = "";
+    for (var ci2 = 0; ci2 < f.length; ci2++) {
+      var cch = f[ci2];
+      if (!inQ2 && (cch === "'" || cch === '"' || cch === "`")) { inQ2 = true; qc2 = cch; }
+      else if (inQ2 && cch === qc2) { var bs2=0, j2=ci2-1; while(j2>=0 && f[j2]==="\\"){bs2++;j2--;} if(bs2%2===0) inQ2=false; }
+      if (!inQ2 && cch === "-" && f[ci2+1] === "-") { ci = ci2; break; }
+    }
+    var expr = ci >= 0 ? f.substring(0,ci).trim() : f;
+    var cmt = ci >= 0 ? f.substring(ci+2).trim() : "";
+    parsed.push({expr: expr, cmt: cmt});
+    if (expr.length > maxLen) maxLen = expr.length;
+  }
+  for (var pi = 0; pi < parsed.length; pi++) {
+    var p = parsed[pi];
+    var pad = "";
+    for (var ps = 0; ps < Math.max(1, maxLen - p.expr.length + 1); ps++) pad += " ";
+    var cmtt = p.cmt ? " -- " + p.cmt : "";
+    var prefix = (pi === 0) ? indent + "    " : indent + "    ,";
+    out.push(prefix + p.expr + pad + cmtt);
+  }
+  return out;
+}
+
+function _formatSelectTokens(tokens, indent){
+  var IND = indent || "";
+  var segs = _findTopLevelKWs(tokens);
+  if (!segs.length || (segs[0].name !== "SELECT" && segs[0].name !== "SELECT DISTINCT")) {
+    return [IND + _rebuild(tokens, 0, tokens.length).replace(/\s+/g, " ").trim()];
+  }
+  var lines = [];
+  for (var s = 0; s < segs.length; s++) {
+    var kw = segs[s].name;
+    var bStart = segs[s].idx + 1;
+    while (bStart < tokens.length && tokens[bStart].type === "KW" && (tokens[bStart].upper === "DISTINCT" || tokens[bStart].upper === "ALL")) bStart++;
+    var bEnd = (s + 1 < segs.length) ? segs[s+1].idx : tokens.length;
+    var body = _trimTokens(tokens, bStart, bEnd);
+    if (kw === "SELECT" || kw === "SELECT DISTINCT") {
+      if (body) {
+        var fl = _fmtFields(body, IND);
+        if (kw === "SELECT DISTINCT") fl[0] = fl[0].replace("SELECT", "SELECT DISTINCT");
+        for (var fi = 0; fi < fl.length; fi++) lines.push(fl[fi]);
+      } else {
+        lines.push(IND + kw);
+      }
+    } else if (kw === "FROM") {
+      lines.push(IND + "FROM");
+      lines.push(IND + "    " + body);
+    } else if (kw.indexOf("JOIN") !== -1) {
+      var jTokens = _tokenizeSelect(body);
+      var onIdx = -1;
+      for (var ji = 0; ji < jTokens.length; ji++) {
+        if (jTokens[ji].type === "KW" && jTokens[ji].upper === "ON") { onIdx = ji; break; }
+      }
+      if (onIdx >= 0) {
+        var tbl = _trimTokens(jTokens, 0, onIdx);
+        var onBody = _trimTokens(jTokens, onIdx + 1, jTokens.length);
+        onBody = onBody.replace(/\s+AND\s+/gi, "\n" + IND + "        AND ");
+        lines.push(IND + kw + " " + tbl);
+        lines.push(IND + "    ON " + onBody);
+      } else {
+        lines.push(IND + kw + " " + body);
+      }
+    } else if (kw === "WHERE" || kw === "HAVING") {
+      var wb = body.replace(/\s+AND\s+/gi, "\n" + IND + "    AND ").replace(/\s+OR\s+/gi, "\n" + IND + "    OR ");
+      lines.push(IND + kw);
+      lines.push(IND + "    " + wb);
+    } else if (kw === "GROUP BY" || kw === "ORDER BY") {
+      var gbF = splitFields(body);
+      lines.push(IND + kw);
+      for (var gi = 0; gi < gbF.length; gi++) {
+        lines.push(IND + "    " + gbF[gi].trim() + (gi < gbF.length - 1 ? "," : ""));
+      }
+    } else if (kw === "LIMIT") {
+      lines.push(IND + "LIMIT " + body);
+    } else if (kw === "UNION" || kw === "UNION ALL") {
+      lines.push(""); lines.push(IND + kw); lines.push("");
+    } else {
+      lines.push(IND + kw + " " + body);
+    }
+  }
+  return lines;
+}
+
+function _formatOneStmt(stmt){
+  var tok = _tokenizeSelect(stmt);
+  if (!tok.length) return [];
+  var first = tok[0].type === "KW" ? tok[0].upper : "";
+  if (first === "SET") {
+    var outSet = [];
+    var curSet = [];
+    for (var i = 0; i < tok.length; i++) {
+      if (tok[i].type === "CH" && tok[i].text === ";") {
+        if (curSet.length) outSet.push(_rebuild(curSet, 0, curSet.length).trim());
+        curSet = [];
+      } else {
+        curSet.push(tok[i]);
+      }
+    }
+    if (curSet.length) outSet.push(_rebuild(curSet, 0, curSet.length).trim());
+    return outSet;
+  }
+  if (first === "CREATE" || first === "INSERT") {
+    var upperStmt = stmt.toUpperCase();
+    // CREATE OR REPLACE TEMPORARY VIEW ... AS ( ... )
+    var cv = upperStmt.match(/CREATE\s+OR\s+REPLACE\s+TEMPORARY\s+VIEW\s+([\w.]+)\s+AS\s*\(/);
+    if (cv) {
+      var vn = cv[1];
+      var pStart = cv.index + cv[0].length - 1;
+      var d = 0, pEnd = -1;
+      for (var pi = pStart; pi < stmt.length; pi++) {
+        if (stmt[pi] === "(") d++;
+        else if (stmt[pi] === ")") { d--; if (d === 0) { pEnd = pi; break; } }
+      }
+      var inner = pEnd > pStart ? stmt.substring(pStart + 1, pEnd).trim() : "";
+      var lines = ["CREATE OR REPLACE TEMPORARY VIEW " + vn + " AS ("];
+      if (inner) {
+        var innerTok = _tokenizeSelect(inner);
+        var innerLines = _formatSelectTokens(innerTok, "    ");
+        for (var li = 0; li < innerLines.length; li++) lines.push(innerLines[li]);
+      }
+      lines.push(")");
+      return lines;
+    }
+    // INSERT OVERWRITE TABLE ... PARTITION(...) ( SELECT ... )
+    var insP = upperStmt.match(/INSERT\s+OVERWRITE\s+TABLE\s+([\w.]+)\s+PARTITION\s*\(/);
+    if (insP) {
+      var parenS = insP.index + insP[0].length - 1;
+      var depth = 0, parenE = -1;
+      for (var pi = parenS; pi < stmt.length; pi++) {
+        if (stmt[pi] === "(") depth++;
+        else if (stmt[pi] === ")") { depth--; if (depth === 0) { parenE = pi; break; } }
+      }
+      var prefix = stmt.substring(0, parenE + 1);
+      var rest = stmt.substring(parenE + 1).trim();
+      // remove wrapping parens around SELECT
+      if (rest.charAt(0) === "(") {
+        var d2 = 0, closeP = -1;
+        for (var pi2 = 0; pi2 < rest.length; pi2++) {
+          if (rest[pi2] === "(") d2++;
+          else if (rest[pi2] === ")") { d2--; if (d2 === 0) { closeP = pi2; break; } }
+        }
+        if (closeP > 0) rest = rest.substring(1, closeP).trim();
+      }
+      var lines = [prefix.trim() + " ("];
+      var selTok = _tokenizeSelect(rest);
+      var selLines = _formatSelectTokens(selTok, "    ");
+      for (var li = 0; li < selLines.length; li++) lines.push(selLines[li]);
+      lines.push(")");
+      return lines;
+    }
+    // INSERT INTO/OVERWRITE ... SELECT
+    var insS = upperStmt.match(/INSERT\s+(?:INTO|OVERWRITE)\s+[\w.]+\s+SELECT/);
+    if (insS) {
+      var selIdx = upperStmt.indexOf("SELECT");
+      var prefix2 = stmt.substring(0, selIdx).trim();
+      var selBody = stmt.substring(selIdx).trim();
+      var lines = [prefix2];
+      var selTok2 = _tokenizeSelect(selBody);
+      var selLines2 = _formatSelectTokens(selTok2, "    ");
+      for (var li = 0; li < selLines2.length; li++) lines.push(selLines2[li]);
+      return lines;
+    }
+  }
+  // Plain SELECT
+  if (tok[0].type === "KW" && tok[0].upper === "SELECT") {
+    return _formatSelectTokens(tok, "");
+  }
+  return [stmt];
+}
+
+function _sqlV6Lex(sql){
+  var out=[], i=0, line=1, col=0, hasCode=false;
+  while(i<sql.length){
+    var c=sql[i], n=sql[i+1]||"";
+    if(c==="\n"){line++;col=0;hasCode=false;i++;continue;}
+    if(/\s/.test(c)){col++;i++;continue;}
+    if(c==="-"&&n==="-"){
+      var e=sql.indexOf("\n",i); if(e<0)e=sql.length;
+      out.push({t:"comment",v:sql.substring(i,e).trim(),line:line,col:col,inline:hasCode});col+=e-i;i=e;continue;
+    }
+    if(c==="/"&&n==="*"){
+      var be=sql.indexOf("*/",i+2); if(be<0)be=sql.length-2;
+      var block=sql.substring(i,be+2),parts=block.split("\n");
+      out.push({t:"comment",v:block.trim(),line:line,col:col,inline:hasCode});
+      if(parts.length>1){line+=parts.length-1;col=parts[parts.length-1].length;hasCode=true;}else col+=block.length;
+      i=be+2;continue;
+    }
+    if(c==="'"||c==='"'||c==="`"){
+      var q=c,s=c,sl=line,sc=col;i++;col++;
+      while(i<sql.length){s+=sql[i];if(sql[i]==="\n"){line++;col=0;}else col++;if(sql[i]===q){if(sql[i+1]===q){s+=sql[i+1];i+=2;col++;continue;}var bs=0,b=i-1;while(b>=0&&sql[b]==="\\"){bs++;b--;}i++;if(bs%2===0)break;continue;}i++;}
+      out.push({t:q==="'"?"string":"quoted",v:s,line:sl,col:sc});hasCode=true;continue;
+    }
+    if(/[A-Za-z_]/.test(c)){var ws=i+1;while(ws<sql.length&&/[A-Za-z0-9_$]/.test(sql[ws]))ws++;out.push({t:"word",v:sql.substring(i,ws),line:line,col:col});col+=ws-i;i=ws;hasCode=true;continue;}
+    if(/[0-9]/.test(c)){var ns=i+1;while(ns<sql.length&&/[0-9.eE]/.test(sql[ns]))ns++;out.push({t:"number",v:sql.substring(i,ns),line:line,col:col});col+=ns-i;i=ns;hasCode=true;continue;}
+    var two=c+n;
+    if(two==="<="||two===">="||two==="<>"||two==="!="||two==="=="||two==="||"||two==="&&"){out.push({t:"op",v:two,line:line,col:col});i+=2;col+=2;hasCode=true;continue;}
+    out.push({t:/[=<>+\-*\/%]/.test(c)?"op":"symbol",v:c,line:line,col:col});i++;col++;hasCode=true;
+  }
+  return out;
+}
+
+var SQL_V6_KEYWORDS={};
+("SELECT DISTINCT FROM WHERE JOIN INNER LEFT RIGHT FULL OUTER CROSS ON AND OR NOT IN IS NULL AS " +
+ "GROUP BY HAVING ORDER ASC DESC LIMIT UNION ALL CASE WHEN THEN ELSE END EXISTS BETWEEN LIKE RLIKE REGEXP " +
+ "OVER PARTITION ROWS RANGE CURRENT ROW UNBOUNDED PRECEDING FOLLOWING INSERT INTO OVERWRITE TABLE VALUES " +
+ "UPDATE DELETE CREATE REPLACE TEMPORARY VIEW WITH DROP ALTER SET TRUE FALSE INTERVAL DAY DAYS HOUR HOURS " +
+ "IF LATERAL EXPLODE WINDOW DISTRIBUTE SORT CLUSTER MAP REDUCE TRANSFORM USING").split(/\s+/).forEach(function(k){SQL_V6_KEYWORDS[k]=1;});
+var SQL_V6_FUNCTIONS={};
+("CAST COUNT SUM AVG MIN MAX ROW_NUMBER NOW UNIX_TIMESTAMP FROM_UNIXTIME COALESCE NVL IFNULL CONCAT SUBSTR SUBSTRING " +
+ "DATE_FORMAT TO_DATE DATEDIFF DATE_ADD DATE_SUB COLLECT_LIST COLLECT_SET EXPLODE SIZE LENGTH UPPER LOWER TRIM ROUND " +
+ "CEIL FLOOR ABS GET_JSON_OBJECT SPLIT REGEXP_REPLACE REGEXP_EXTRACT LAG LEAD FIRST_VALUE LAST_VALUE RANK DENSE_RANK").split(/\s+/).forEach(function(k){SQL_V6_FUNCTIONS[k]=1;});
+
+function _sqlV6Clone(a,s,e){return a.slice(s||0,e==null?a.length:e);}
+function _sqlV6Upper(t){return t&&t.t==="word"?t.v.toUpperCase():"";}
+function _sqlV6Is(t,k){return _sqlV6Upper(t)===k;}
+function _sqlV6NextCode(a,i){while(i<a.length&&a[i].t==="comment")i++;return i;}
+function _sqlV6MatchParen(a,start){
+  var d=0;
+  for(var i=start;i<a.length;i++){
+    if(a[i].v==="(")d++;
+    else if(a[i].v===")"){d--;if(d===0)return i;}
+  }
+  return -1;
+}
+function _sqlV6TopIndex(a,words,start){
+  var d=0;
+  for(var i=start||0;i<a.length;i++){
+    if(a[i].v==="("){d++;continue;}
+    if(a[i].v===")"){d--;continue;}
+    if(d===0&&a[i].t==="word"&&words.indexOf(_sqlV6Upper(a[i]))>=0)return i;
+  }
+  return -1;
+}
+function _sqlV6Indent(n){return new Array(n*4+1).join(" ");}
+function _sqlV6SplitTop(a,delimiter){
+  var out=[],start=0,d=0;
+  for(var i=0;i<a.length;i++){
+    if(a[i].v==="(")d++;
+    else if(a[i].v===")")d--;
+    if(d===0&&a[i].v===delimiter){out.push(a.slice(start,i));start=i+1;}
+  }
+  out.push(a.slice(start));return out;
+}
+
+
+function _sqlV6WordValue(a,i){
+  var t=a[i], u=_sqlV6Upper(t);
+  if(t.t!=="word")return t.v;
+  if((a[i-1]&&a[i-1].v===".")||(a[i+1]&&a[i+1].v==="."))return t.v.toLowerCase();
+  if(SQL_V6_KEYWORDS[u])return u;
+  var ni=_sqlV6NextCode(a,i+1);
+  if(SQL_V6_FUNCTIONS[u]||(ni<a.length&&a[ni].v==="("))return u;
+  return t.v.toLowerCase();
+}
+function _sqlV6Expr(a){
+  var s="", prev="", prevType="",prevUpper="";
+  for(var i=0;i<a.length;i++){
+    var t=a[i];
+    if(t.t==="comment")continue;
+    var v=t.t==="word"?_sqlV6WordValue(a,i):(t.t==="quoted"&&t.v[0]==="`"?"`"+t.v.substring(1,t.v.length-1).toLowerCase()+"`":t.v);
+    var isCmp=t.t==="op"&&/^(=|==|!=|<>|<=|>=|<|>)$/.test(v);
+    if(isCmp){s=s.replace(/\s+$/g,"")+" "+v+" ";prev=v;prevType="op";prevUpper="";continue;}
+    if(v==="."){s=s.replace(/\s+$/g,"")+".";prev=v;prevType=t.t;prevUpper="";continue;}
+    if(v===","){s=s.replace(/\s+$/g,"") + ", ";prev=v;prevType=t.t;prevUpper="";continue;}
+    if(v===")"||v==="]"){s=s.replace(/\s+$/g,"")+v;prev=v;prevType=t.t;prevUpper="";continue;}
+    if(v==="("||v==="["){
+      var compact=prevType==="word"&&(!SQL_V6_KEYWORDS[prevUpper]||SQL_V6_FUNCTIONS[prevUpper]||prevUpper==="PARTITION"||prevUpper==="OVER");
+      var noSpace=!s||prev==="."||prev==="("||prev==="["||prevType==="quoted"||compact;
+      if(!noSpace&&!/\s$/.test(s))s+=" ";
+      s+=v;prev=v;prevType=t.t;prevUpper="";continue;
+    }
+    if(v===";"){s=s.replace(/\s+$/g,"")+";";prev=v;prevType=t.t;prevUpper="";continue;}
+    if(t.t==="op"){
+      if(v==="||"){s=s.replace(/\s+$/g,"")+" || ";}
+      else if(v==="*"&&(prev==="("||prev===".")){s+=v;}
+      else{s=s.replace(/\s+$/g,"")+" "+v+" ";}
+      prev=v;prevType=t.t;prevUpper="";continue;
+    }
+    var compactUnit=t.t==="word"&&prevType==="number"&&a[i-1]&&t.line===a[i-1].line&&t.col===a[i-1].col+a[i-1].v.length;
+    var need=s&&!/\s$/.test(s)&&prev!=="("&&prev!=="["&&prev!=="."&&!compactUnit;
+    if(need)s+=" ";s+=v;prev=v;prevType=t.t;prevUpper=t.t==="word"?_sqlV6Upper(t):"";
+  }
+  return s.replace(/\s+/g," ").replace(/\s+([,)\]])/g,"$1").trim();
+}
+function _sqlV6Comment(a){
+  for(var i=0;i<a.length;i++)if(a[i].t==="comment"&&a[i].inline)return a[i].v.replace(/^--\s*/,"--");
+  return "";
+}
+function _sqlV6WithoutComments(a){return a.filter(function(t){return t.t!=="comment";});}
+function _sqlV6Align(items){
+  var max=0;
+  items.forEach(function(x){if(x.comment){var n=getVisualLength(x.code);if(n>max)max=n;}});
+  return items.map(function(x){
+    if(!x.comment)return x.code;
+    var pad=new Array(Math.max(1,max-getVisualLength(x.code)+2)+1).join(" ");
+    return x.code+pad+x.comment;
+  });
+}
+function _sqlV6Fields(a){
+  var out=[],cur=[],d=0;
+  for(var i=0;i<a.length;i++){
+    var t=a[i];
+    if(t.v==="(")d++;else if(t.v===")")d--;
+    if(d===0&&t.v===","){
+      var seg=cur;cur=[];
+      if(i+1<a.length&&a[i+1].t==="comment"){seg.push(a[++i]);}
+      out.push(seg);continue;
+    }
+    cur.push(t);
+  }
+  if(cur.length)out.push(cur);return out;
+}
+function _sqlV6Conditions(a){
+  var out=[],cur=[],d=0,op="";
+  for(var i=0;i<a.length;i++){
+    var t=a[i],u=_sqlV6Upper(t);
+    if(t.v==="(")d++;else if(t.v===")")d--;
+    if(d===0&&(u==="AND"||u==="OR")){
+      if(cur.length)out.push({op:op,tokens:cur});
+      op=u;cur=[];continue;
+    }
+    cur.push(t);
+  }
+  if(cur.length)out.push({op:op,tokens:cur});return out;
+}
+
+function _sqlV6ClauseStarts(a){
+  var out=[],d=0;
+  for(var i=0;i<a.length;i++){
+    if(a[i].v==="("){d++;continue;}if(a[i].v===")"){d--;continue;}
+    if(d!==0||a[i].t!=="word")continue;
+    var u=_sqlV6Upper(a[i]), name="",skip=0;
+    if(u==="SELECT"||u==="FROM"||u==="WHERE"||u==="HAVING"||u==="LIMIT"||u==="UNION")name=u;
+    else if(u==="GROUP"&&_sqlV6Is(a[i+1],"BY")){name="GROUP BY";skip=1;}
+    else if(u==="ORDER"&&_sqlV6Is(a[i+1],"BY")){name="ORDER BY";skip=1;}
+    else if(u==="JOIN")name="JOIN";
+    else if((u==="LEFT"||u==="RIGHT"||u==="FULL"||u==="INNER"||u==="CROSS")&&(_sqlV6Is(a[i+1],"JOIN")||(_sqlV6Is(a[i+1],"OUTER")&&_sqlV6Is(a[i+2],"JOIN")))){
+      name=u+(_sqlV6Is(a[i+1],"OUTER")?" OUTER JOIN":" JOIN");skip=_sqlV6Is(a[i+1],"OUTER")?2:1;
+    }
+    if(name){out.push({i:i,name:name,skip:skip});i+=skip;}
+  }
+  return out;
+}
+function _sqlV6Line(code,tokens){return {code:code,comment:_sqlV6Comment(tokens)};}
+function _sqlV6FieldAlias(seg){
+  var a=_sqlV6WithoutComments(seg),d=0,as=-1;
+  for(var i=0;i<a.length;i++){
+    if(a[i].v==="("){d++;continue;}if(a[i].v===")"){d--;continue;}
+    if(d===0&&_sqlV6Is(a[i],"AS")){as=i;break;}
+  }
+  if(as>=0&&a[as+1])return {expr:a.slice(0,as),alias:a.slice(as+1)};
+  var last=a.length-1;
+  if(last<1||a[last].t!=="word"||SQL_V6_KEYWORDS[_sqlV6Upper(a[last])]||a[last-1].v===".")return {expr:a,alias:[]};
+  var simpleQualified=true;
+  for(var j=0;j<a.length;j++)if(a[j].t!=="word"&&a[j].t!=="quoted"&&a[j].v!=="."){simpleQualified=false;break;}
+  if(simpleQualified){
+    var words=0,dots=0;for(var k=0;k<a.length;k++){if(a[k].t==="word"||a[k].t==="quoted")words++;else if(a[k].v===".")dots++;}
+    if(words===dots+1)return {expr:a,alias:[]};
+  }
+  return {expr:a.slice(0,last),alias:[a[last]]};
+}
+function _sqlV6FormatFields(a,level,distinct){
+  var segs=_sqlV6Fields(a),items=[],standalone=[],ind=_sqlV6Indent(level+1),parsed=[],maxExpr=0;
+  segs.forEach(function(seg,idx){
+    var parts=_sqlV6FieldAlias(seg),expr=_sqlV6Expr(parts.expr),alias=_sqlV6Expr(parts.alias),c=_sqlV6Comment(seg);
+    if(expr){if(alias&&getVisualLength(expr)>maxExpr)maxExpr=getVisualLength(expr);parsed.push({expr:expr,alias:alias,comment:c,last:idx===segs.length-1});}
+    seg.forEach(function(t){if(t.t==="comment"&&!t.inline)standalone.push(ind+t.v.replace(/^--\s*/,"-- "));});
+  });
+  parsed.forEach(function(p){
+    var code=ind+p.expr;
+    if(p.alias)code+=new Array(Math.max(1,maxExpr-getVisualLength(p.expr)+1)+1).join(" ")+"AS "+p.alias;
+    if(!p.last)code+=",";
+    items.push({code:code,comment:p.comment});
+  });
+  return {head:_sqlV6Indent(level)+"SELECT"+(distinct?" DISTINCT":""),items:items,standalone:standalone};
+}
+function _sqlV6FormatSubquery(a,level){
+  var first=_sqlV6NextCode(a,0);
+  if(a[first]&&a[first].v==="("){
+    var close=_sqlV6MatchParen(a,first),inner=a.slice(first+1,close),tail=a.slice(close+1);
+    if(_sqlV6Is(inner[_sqlV6NextCode(inner,0)],"SELECT")||_sqlV6Is(inner[_sqlV6NextCode(inner,0)],"WITH")){
+      var lines=[_sqlV6Indent(level)+"("];
+      lines=lines.concat(_sqlV6FormatQuery(inner,level+1));
+      lines.push(_sqlV6Indent(level)+")"+(_sqlV6Expr(tail)?" "+_sqlV6Expr(tail):""));
+      return lines;
+    }
+  }
+  return _sqlV6StandaloneComments(a,level).concat([_sqlV6Indent(level)+_sqlV6Expr(_sqlV6WithoutComments(a))]);
+}
+function _sqlV6FormatCommentCode(raw){
+  var body=raw.replace(/^--\s*/,"").trim();
+  if(!/^(and|or|order|group|where|select|from|join|left|right|inner|full|having|limit)\b/i.test(body))return "-- "+body;
+  return "-- "+_sqlV6Expr(_sqlV6Lex(body));
+}
+function _sqlV6ExistsInfo(a){
+  var d=0;
+  for(var i=0;i<a.length;i++){
+    if(a[i].v==="("){d++;continue;}if(a[i].v===")"){d--;continue;}
+    if(d===0&&_sqlV6Is(a[i],"EXISTS")){
+      var open=_sqlV6NextCode(a,i+1);
+      if(a[open]&&a[open].v==="("){
+        var close=_sqlV6MatchParen(a,open),inner=a.slice(open+1,close);
+        if(close>open&&(_sqlV6Is(inner[_sqlV6NextCode(inner,0)],"SELECT")||_sqlV6Is(inner[_sqlV6NextCode(inner,0)],"WITH")))return {open:open,close:close,inner:inner};
+      }
+    }
+  }
+  return null;
+}
+function _sqlV6FormatConditions(a,baseLevel,head){
+  var parts=_sqlV6Conditions(a),items=[];
+  parts.forEach(function(p,idx){
+    var lineLevel=idx===0?baseLevel:baseLevel+1,prefix=idx===0?head:p.op,ex=_sqlV6ExistsInfo(p.tokens);
+    if(ex){
+      var before=_sqlV6Expr(_sqlV6WithoutComments(p.tokens.slice(0,ex.open))),tail=_sqlV6Expr(_sqlV6WithoutComments(p.tokens.slice(ex.close+1)));
+      items.push({code:_sqlV6Indent(lineLevel)+prefix+" "+before+" (",comment:_sqlV6Comment(p.tokens)});
+      var innerLines=_sqlV6Is(ex.inner[_sqlV6NextCode(ex.inner,0)],"WITH")?_sqlV6FormatWith(ex.inner,lineLevel+1):_sqlV6FormatQuery(ex.inner,lineLevel+1);
+      innerLines.forEach(function(line){items.push({code:line,comment:""});});
+      items.push({code:_sqlV6Indent(lineLevel)+")"+(tail?" "+tail:""),comment:""});
+    }else{
+      var code=prefix+" "+_sqlV6Expr(_sqlV6WithoutComments(p.tokens));
+      if(code.trim()!==head)items.push({code:_sqlV6Indent(lineLevel)+code,comment:_sqlV6Comment(p.tokens)});
+    }
+    p.tokens.forEach(function(t){
+      if(t.t!=="comment"||t.inline)return;
+      var body=t.v.replace(/^--\s*/,""),lv=baseLevel+1;
+      if(/^(ORDER|GROUP|WHERE)\b/i.test(body))lv=baseLevel;
+      items.push({code:_sqlV6Indent(lv)+_sqlV6FormatCommentCode(t.v),comment:""});
+    });
+  });
+  return items;
+}
+function _sqlV6FormatQuery(a,level){
+  var starts=_sqlV6ClauseStarts(a);if(!starts.length)return [_sqlV6Indent(level)+_sqlV6Expr(a)];
+  var lines=[],fieldItems=[],otherItems=[];
+  for(var si=0;si<starts.length;si++){
+    var st=starts[si],end=si+1<starts.length?starts[si+1].i:a.length;
+    var body=a.slice(st.i+1+st.skip,end);
+    if(st.name==="SELECT"){
+      var distinct=_sqlV6Is(body[_sqlV6NextCode(body,0)],"DISTINCT");if(distinct)body=body.slice(_sqlV6NextCode(body,0)+1);
+      var fr=_sqlV6FormatFields(body,level,distinct);lines.push(fr.head);fieldItems=fr.items;
+      lines=lines.concat(_sqlV6Align(fieldItems)).concat(fr.standalone);
+    }else if(st.name==="FROM"){
+      var cleanBody=_sqlV6WithoutComments(body),firstBody=_sqlV6NextCode(cleanBody,0);
+      if(cleanBody[firstBody]&&cleanBody[firstBody].v==="("){
+        var closeBody=_sqlV6MatchParen(cleanBody,firstBody),innerBody=cleanBody.slice(firstBody+1,closeBody),tailBody=cleanBody.slice(closeBody+1);
+        if(_sqlV6Is(innerBody[_sqlV6NextCode(innerBody,0)],"SELECT")||_sqlV6Is(innerBody[_sqlV6NextCode(innerBody,0)],"WITH")){
+          lines.push(_sqlV6Indent(level+1)+"FROM (");
+          lines=lines.concat(_sqlV6FormatQuery(innerBody,level+2));
+          lines.push(_sqlV6Indent(level+2)+")"+(_sqlV6Expr(tailBody)?" "+_sqlV6Expr(tailBody):""));
+        }else otherItems.push(_sqlV6Line(_sqlV6Indent(level+1)+"FROM "+_sqlV6Expr(cleanBody),body));
+      }else otherItems.push(_sqlV6Line(_sqlV6Indent(level+1)+"FROM "+_sqlV6Expr(cleanBody),body));
+    }else if(st.name.indexOf("JOIN")>=0){
+      var on=_sqlV6TopIndex(body,["ON"],0),src=on>=0?body.slice(0,on):body,cond=on>=0?body.slice(on+1):[];
+      otherItems.push(_sqlV6Line(_sqlV6Indent(level+1)+st.name+" "+_sqlV6Expr(_sqlV6WithoutComments(src)),src));
+      if(cond.length)otherItems=otherItems.concat(_sqlV6FormatConditions(cond,level+2,"ON"));
+    }else if(st.name==="WHERE"||st.name==="HAVING"){
+      otherItems=otherItems.concat(_sqlV6FormatConditions(body,level+1,st.name));
+    }else if(st.name==="GROUP BY"||st.name==="ORDER BY"){
+      otherItems.push(_sqlV6Line(_sqlV6Indent(level+1)+st.name+" "+_sqlV6Expr(_sqlV6WithoutComments(body)),body));
+    }else if(st.name==="LIMIT")otherItems.push({code:_sqlV6Indent(level+1)+"LIMIT "+_sqlV6Expr(body),comment:""});
+  }
+  return lines.concat(_sqlV6Align(otherItems));
+}
+
+function _sqlV6StandaloneComments(a,level){
+  var out=[];
+  for(var i=0;i<a.length;i++)if(a[i].t==="comment"&&!a[i].inline)out.push(_sqlV6Indent(level)+a[i].v.replace(/^--\s*/,"-- "));
+  return out;
+}
+function _sqlV6SplitStatements(a){
+  var out=[],cur=[],d=0;
+  for(var i=0;i<a.length;i++){
+    var t=a[i];if(t.v==="(")d++;else if(t.v===")")d--;
+    if(t.v===";"&&d===0){if(cur.length)out.push(cur);cur=[];continue;}cur.push(t);
+  }
+  if(cur.length)out.push(cur);return out;
+}
+function _sqlV6FormatWith(a,level){
+  var lines=[_sqlV6Indent(level)+"WITH"],i=1;
+  while(i<a.length){
+    var name=a[i]&&a[i].t==="word"?a[i].v.toLowerCase():"";i++;
+    if(_sqlV6Is(a[i],"AS"))i++;
+    if(!a[i]||a[i].v!=="(")break;
+    var close=_sqlV6MatchParen(a,i);lines.push(_sqlV6Indent(level+1)+name+" AS (");
+    lines=lines.concat(_sqlV6FormatQuery(a.slice(i+1,close),level+2));
+    i=close+1;if(a[i]&&a[i].v===","){lines.push(_sqlV6Indent(level+1)+",");i++;continue;}
+    lines.push(_sqlV6Indent(level+1)+")");break;
+  }
+  if(i<a.length)lines=lines.concat(_sqlV6FormatQuery(a.slice(i),level));
+  return lines;
+}
+function _sqlV6FormatStatement(a){
+  var lead=[];while(a.length&&a[0].t==="comment"&&!a[0].inline)lead.push(a.shift().v.replace(/^--\s*/,"-- "));
+  var first=_sqlV6Upper(a[_sqlV6NextCode(a,0)]),lines=[];
+  if(first==="SET")lines=[_sqlV6Expr(a)+";"];
+  else if(first==="CREATE"){
+    var as=_sqlV6TopIndex(a,["AS"],0),open=as>=0?_sqlV6NextCode(a,as+1):-1;
+    if(as>=0&&a[open]&&a[open].v==="("){
+      var close=_sqlV6MatchParen(a,open),head=a.slice(0,open);
+      lines.push(_sqlV6Expr(head)+" (");lines=lines.concat(_sqlV6FormatQuery(a.slice(open+1,close),1));lines.push(");");
+    }else lines=[_sqlV6Expr(a)+";"];
+  }else if(first==="INSERT"){
+    var sel=-1,d=0;
+    for(var ii=1;ii<a.length;ii++){
+      if(a[ii].v==="("){
+        var nx=_sqlV6NextCode(a,ii+1);
+        if(_sqlV6Is(a[nx],"SELECT")||_sqlV6Is(a[nx],"WITH")){sel=nx;break;}
+        d++;continue;
+      }
+      if(a[ii].v===")"){d--;continue;}
+      if(d===0&&(_sqlV6Is(a[ii],"SELECT")||_sqlV6Is(a[ii],"WITH"))){sel=ii;break;}
+    }
+    var prefix=sel>=0?a.slice(0,sel):a,wrapper=false;
+    if(sel>0&&a[sel-1].v==="("){wrapper=true;prefix=a.slice(0,sel-1);}
+    lines.push(_sqlV6Expr(prefix)+(wrapper?"(":""));
+    if(sel>=0)lines=lines.concat(_sqlV6Is(a[sel],"WITH")?_sqlV6FormatWith(a.slice(sel),1):_sqlV6FormatQuery(a.slice(sel,wrapper&&a[a.length-1].v===")"?a.length-1:a.length),1));
+    if(wrapper)lines.push(");");else lines[lines.length-1]+=";";
+  }else if(first==="WITH")lines=_sqlV6FormatWith(a,0);
+  else if(first==="SELECT")lines=_sqlV6FormatQuery(a,0);
+  else lines=[_sqlV6Expr(a)+";"];
+  if(lead.length)return lead.concat([""],lines);return lines;
+}
+function formatSqlStmt(sql){
+  try{
+    if(!sql||!sql.trim())return sql;
+    var tokens=_sqlV6Lex(sql),stmts=_sqlV6SplitStatements(tokens),all=[];
+    for(var i=0;i<stmts.length;i++){
+      var lines=_sqlV6FormatStatement(stmts[i].slice());
+      var prevFirst=i>0?_sqlV6Upper(stmts[i-1][_sqlV6NextCode(stmts[i-1],0)]):"";
+      var currFirst=_sqlV6Upper(stmts[i][_sqlV6NextCode(stmts[i],0)]);
+      if(all.length&&all[all.length-1]!==""&&!(prevFirst==="SET"&&currFirst==="SET"))all.push("");
+      all=all.concat(lines);
+    }
+    return all.join("\n").replace(/[ \t]+$/gm,"").trim();
+  }catch(e){return "/* 格式化错误: "+e.message+" */\n"+sql;}
+}
+
+// ===================== SELECT -> CREATE =====================
+function selectToCreate(sqlText){
+  var result = parseSelectStruct(sqlText);
+  if (result.error) return {error: result.error};
+  if (!result.columns.length) return {error:"解析列失败"};
+  var colDefs = result.columns.map(function(c){
+    return "    " + c.name + " " + c.type + " COMMENT '" + c.comment + "'";
+  }).join(",\n");
+  var createSQL = "CREATE TABLE " + result.tableName + " (\n" + colDefs + "\n);";
+  return {tableName:result.tableName, columns:result.columns, createSQL:createSQL};
+}
+
+// ===================== Visual Length (CJK = 2, ASCII = 1) =====================
+function getVisualLength(str){
+  if (!str) return 0;
+  var len = 0;
+  for (var i = 0; i < str.length; i++) {
+    var c = str.charCodeAt(i);
+    if (c >= 0x4E00 && c <= 0x9FFF) len += 2;
+    else len += 1;
+  }
+  return len;
+}
+
+// ===================== Tab Manager =====================
+(function(){
+  var tabBtns = document.querySelectorAll('.tab-btn');
+  var tabPanes = {
+    hive: document.getElementById('pane-hive'),
+    ddl: document.getElementById('pane-ddl'),
+    format: document.getElementById('pane-format')
+  };
+  tabBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      tabBtns.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      var tab = btn.getAttribute('data-tab');
+      Object.keys(tabPanes).forEach(function(key){
+        if (tabPanes[key]) tabPanes[key].classList.toggle('active', key === tab);
+      });
+    });
+  });
+})();
+
+function renderResult(el, text, isError){
+  el.textContent = text;
+  el.classList.toggle('error', !!isError);
+}
+function renderError(el, msg){
+  renderResult(el, msg, true);
+}
+
+// ===================== Hive Tab Bindings =====================
+(function(){
+  var input = $('hiveInput'), result = $('hiveResult'),
+      status = $('hiveStatus'), partition = $('hivePartition'),
+      colCount = $('hiveColCount'), tableNameEl = $('hiveTableName');
+
+  function parse(){
+    var sql = input.value.trim();
+    if (!sql) { status.textContent = ''; return; }
+    var data = parseSQLToHive(sql);
+    if (data.error) { renderError(result, data.error); status.textContent = '❌ ' + data.error; colCount.textContent = '0 列'; return; }
+    var hiveSQL = generateHiveCreate(data.tableName, data.columns, partition.value.trim());
+    renderResult(result, hiveSQL, false);
+    colCount.textContent = data.columns.length + ' 列';
+    tableNameEl.textContent = data.tableName;
+    status.textContent = '✅ 生成成功';
+  }
+
+  $('hiveParseBtn').addEventListener('click', parse);
+  $('hiveClearBtn').addEventListener('click', function(){
+    input.value = ''; renderResult(result, '', false); status.textContent = '已清空';
+    colCount.textContent = '0 列'; tableNameEl.textContent = '—';
+  });
+  $('hiveExampleBtn').addEventListener('click', function(){
+    input.value = 'CREATE TABLE orders (\n  order_id INT PRIMARY KEY,\n  user_id INT NOT NULL,\n  amount DECIMAL(10,2),\n  create_time DATETIME,\n  dt VARCHAR(20)\n) PARTITIONED BY (dt);';
+    parse();
+  });
+  $('hiveCopyBtn').addEventListener('click', function(){
+    copyToClipboard(result.textContent).then(function(ok){
+      if (ok) { showToast('📋 已复制'); status.textContent = '✅ 已复制'; }
+      else status.textContent = '⚠️ 没有可复制的内容';
+    });
+  });
+  input.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); parse(); }
+  });
+})();
+
+// ===================== DDL Tab Bindings =====================
+(function(){
+  var input = $('ddlInput'), result = $('ddlResult'), status = $('ddlStatus'), resultCount = $('ddlResultCount');
+
+  function toSelectStandard(){
+    var sql = input.value.trim();
+    if (!sql) { status.textContent = '⚠️ 请输入 SQL'; return; }
+    var data = parseDDLStruct(sql);
+    if (!data) { renderError(result, '无法解析 DDL'); status.textContent = '❌ 解析失败'; return; }
+    var out = generateSelectStandard(data);
+    renderResult(result, out, false);
+    resultCount.textContent = data.fields.length + data.partitions.length + ' 列';
+    status.textContent = '✅ DDL → SELECT (标准)';
+  }
+  function toSelectAlias(){
+    var sql = input.value.trim();
+    if (!sql) { status.textContent = '⚠️ 请输入 SQL'; return; }
+    var data = parseDDLStruct(sql);
+    if (!data) { renderError(result, '无法解析 DDL'); status.textContent = '❌ 解析失败'; return; }
+    var out = generateSelectAlias(data);
+    renderResult(result, out, false);
+    resultCount.textContent = data.fields.length + data.partitions.length + ' 列';
+    status.textContent = '✅ DDL → SELECT (AS别名)';
+  }
+  function toCreate(){
+    var sql = input.value.trim();
+    if (!sql) { status.textContent = '⚠️ 请输入 SQL'; return; }
+    var data = selectToCreate(sql);
+    if (data.error) { renderError(result, data.error); status.textContent = '❌ ' + data.error; return; }
+    renderResult(result, data.createSQL, false);
+    resultCount.textContent = data.columns.length + ' 列';
+    status.textContent = '✅ SELECT → CREATE';
+  }
+
+  $('ddlToSelectBtn').addEventListener('click', toSelectStandard);
+  $('ddlToAliasBtn').addEventListener('click', toSelectAlias);
+  $('selectToDdlBtn').addEventListener('click', toCreate);
+  $('ddlClearBtn').addEventListener('click', function(){
+    input.value = ''; renderResult(result, '', false); resultCount.textContent = '—'; status.textContent = '已清空';
+  });
+  $('ddlCopyBtn').addEventListener('click', function(){
+    copyToClipboard(result.textContent).then(function(ok){
+      if (ok) { showToast('📋 已复制'); status.textContent = '✅ 已复制'; }
+      else status.textContent = '⚠️ 没有可复制的内容';
+    });
+  });
+  $('ddlExampleTag').addEventListener('click', function(){
+    input.value = 'SELECT biz_date, user_id, order_id, amount FROM orders';
+    toSelectStandard();
+  });
+  input.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      toSelectStandard();
+    }
+  });
+})();
+
+// ===================== Format Tab Bindings =====================
+(function(){
+  var input = $('formatInput'), result = $('formatResult'),
+      status = $('formatStatus'), resultCount = $('formatResultCount');
+
+  function format(){
+    var sql = input.value;
+    if (!sql.trim()) { status.textContent = '⚠️ 请输入 SQL'; return; }
+    try {
+      var out = formatSqlStmt(sql);
+      renderResult(result, out, false);
+      if (out.indexOf('格式化错误') === 0) {
+        resultCount.textContent = '错误';
+        status.textContent = '❌ 格式化出错';
+        return;
+      }
+      var outLines = out.split('\n').length;
+      var inLines = sql.split('\n').length;
+      resultCount.textContent = outLines + ' 行';
+      status.textContent = '✅ 格式化成功';
+    } catch(e) {
+      renderError(result, '格式化错误: ' + e.message);
+      resultCount.textContent = '错误';
+      status.textContent = '❌ ' + e.message;
+    }
+  }
+
+  var examples = [
+    'select biz_date,user_id,order_id,amount from orders',
+    "SELECT a.id,a.name,b.department,a.salary FROM employees a JOIN departments b ON a.dept_id=b.id WHERE a.salary>5000 AND a.status='active'",
+    'SELECT user_id,full_name AS name,email,created_at FROM users WHERE is_active=1 ORDER BY created_at DESC LIMIT 10',
+    'SELECT product_name,price,quantity,price*quantity AS total FROM order_items WHERE quantity>0 GROUP BY product_name,price HAVING SUM(quantity)>100 ORDER BY total DESC',
+    "set spark.sql.adaptive.enabled = true;\nset spark.sql.shuffle.partitions = 400;\ncreate or replace temporary view t_v as (select distinct cargo_no,voucher from t_cargo where is_active=1 and data_type='ENCLOSE');\ninsert overwrite table rpt_dd partition(dt) (select cargo_no waybill_no,org_code dest_org_code from t_v where rn=1)"
+  ];
+  var exIdx = 0;
+
+  $('formatBtn').addEventListener('click', format);
+  $('formatClearBtn').addEventListener('click', function(){
+    input.value = ''; renderResult(result, '', false); resultCount.textContent = '—'; status.textContent = '已清空';
+  });
+  $('formatExampleBtn').addEventListener('click', function(){
+    input.value = examples[exIdx % examples.length];
+    exIdx++;
+    format();
+  });
+  $('formatCopyBtn').addEventListener('click', function(){
+    copyToClipboard(result.textContent).then(function(ok){
+      if (ok) { showToast('📋 已复制'); status.textContent = '✅ 已复制'; }
+      else status.textContent = '⚠️ 没有可复制的内容';
+    });
+  });
+  input.addEventListener('keydown', function(e){
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      format();
+    }
+  });
+  format();
+})();
+</script>
+</body>
+</html>

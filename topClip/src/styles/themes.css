@@ -1,0 +1,105 @@
+/*
+ * themes.css - 5 套主题 × 深/浅色模式变量
+ * 使用 data-theme + data-mode 组合选择
+ * 变量：
+ *  --bg-start / --bg-end : 应用背景渐变
+ *  --header-start / --header-end : 顶栏渐变
+ *  --card-bg : 卡片背景
+ *  --card-bg-pin : 钉住卡片背景（渐变）
+ *  --text-primary / --text-secondary
+ *  --accent : 主题主色（按钮 / 图标 / 高亮）
+ *  --accent-soft : 主题主色淡化
+ *  --border : 分隔线
+ *  --shadow : 卡片阴影
+ */
+
+/* ============ 静谧蓝 ============ */
+:root[data-theme="静谧蓝"][data-mode="light"] {
+  --bg-start: #e8f1ff;   --bg-end: #bfd7ff;
+  --header-start: #6ea8ff; --header-end: #2f6fe0;
+  --card-bg: #ffffffcc;  --card-bg-pin: linear-gradient(135deg,#dbeafe,#93c5fd);
+  --text-primary:#0f2350; --text-secondary:#4a5b83;
+  --accent:#2f6fe0; --accent-soft:#6ea8ff44; --border:#c7d7f2;
+  --shadow: 0 4px 14px rgba(47,111,224,.18);
+}
+:root[data-theme="静谧蓝"][data-mode="dark"] {
+  --bg-start:#0b1a33; --bg-end:#152a55;
+  --header-start:#1e3a8a; --header-end:#3b5db8;
+  --card-bg:#1e2a4a99; --card-bg-pin:linear-gradient(135deg,#243b7a,#3b5db8);
+  --text-primary:#e6efff; --text-secondary:#9fb3dd;
+  --accent:#6ea8ff; --accent-soft:#6ea8ff33; --border:#2b3f6e;
+  --shadow:0 4px 14px rgba(0,0,0,.35);
+}
+
+/* ============ 活力紫 ============ */
+:root[data-theme="活力紫"][data-mode="light"] {
+  --bg-start:#f4ecff; --bg-end:#d8c2ff;
+  --header-start:#9b6cff; --header-end:#5b2ee0;
+  --card-bg:#ffffffcc; --card-bg-pin:linear-gradient(135deg,#ede0ff,#c4a3ff);
+  --text-primary:#2a1150; --text-secondary:#5b4a83;
+  --accent:#7a3ff0; --accent-soft:#9b6cff44; --border:#dcc9f2;
+  --shadow:0 4px 14px rgba(122,63,240,.18);
+}
+:root[data-theme="活力紫"][data-mode="dark"] {
+  --bg-start:#180b33; --bg-end:#2c1555;
+  --header-start:#4b2494; --header-end:#7a3ff0;
+  --card-bg:#241a4a99; --card-bg-pin:linear-gradient(135deg,#3a2378,#6b3fd6);
+  --text-primary:#f0e8ff; --text-secondary:#b8a3dd;
+  --accent:#c4a3ff; --accent-soft:#9b6cff33; --border:#3d2b6e;
+  --shadow:0 4px 14px rgba(0,0,0,.35);
+}
+
+/* ============ 极简灰（商务） ============ */
+:root[data-theme="极简灰"][data-mode="light"] {
+  --bg-start:#f4f5f7; --bg-end:#dcdfe6;
+  --header-start:#c1c7d0; --header-end:#8b93a1;
+  --card-bg:#ffffffe0; --card-bg-pin:linear-gradient(135deg,#e5e7eb,#b8bec9);
+  --text-primary:#1f2937; --text-secondary:#4b5563;
+  --accent:#4b5563; --accent-soft:#8b93a144; --border:#d5d8de;
+  --shadow:0 4px 14px rgba(75,85,99,.18);
+}
+:root[data-theme="极简灰"][data-mode="dark"] {
+  --bg-start:#1a1c1f; --bg-end:#2b2f36;
+  --header-start:#2f343d; --header-end:#4b5563;
+  --card-bg:#2a2e3599; --card-bg-pin:linear-gradient(135deg,#3a3f47,#5a626e);
+  --text-primary:#eef1f5; --text-secondary:#a0a7b2;
+  --accent:#c0c7d1; --accent-soft:#8b93a133; --border:#3a3f47;
+  --shadow:0 4px 14px rgba(0,0,0,.4);
+}
+
+/* ============ 暖橙 ============ */
+:root[data-theme="暖橙"][data-mode="light"] {
+  --bg-start:#fff2e0; --bg-end:#ffcf9e;
+  --header-start:#ffa76a; --header-end:#f26a2a;
+  --card-bg:#ffffffcc; --card-bg-pin:linear-gradient(135deg,#ffe0c2,#ffb27a);
+  --text-primary:#4a1e05; --text-secondary:#7a4020;
+  --accent:#e05a1a; --accent-soft:#ffa76a44; --border:#f5cfa8;
+  --shadow:0 4px 14px rgba(224,90,26,.18);
+}
+:root[data-theme="暖橙"][data-mode="dark"] {
+  --bg-start:#2a1207; --bg-end:#4a1e0a;
+  --header-start:#7a3010; --header-end:#c04a15;
+  --card-bg:#3a1a0999; --card-bg-pin:linear-gradient(135deg,#5a2510,#a04010);
+  --text-primary:#fff1e0; --text-secondary:#d7a683;
+  --accent:#ffb27a; --accent-soft:#ffa76a33; --border:#5a2a10;
+  --shadow:0 4px 14px rgba(0,0,0,.35);
+}
+
+/* ============ 暗夜黑（主打深色） ============ */
+:root[data-theme="暗夜黑"][data-mode="light"] {
+  /* 暗夜黑的浅色模式：偏冷灰调 */
+  --bg-start:#e5e7eb; --bg-end:#9ca3af;
+  --header-start:#4b5563; --header-end:#1f2937;
+  --card-bg:#ffffffdd; --card-bg-pin:linear-gradient(135deg,#d1d5db,#6b7280);
+  --text-primary:#111827; --text-secondary:#374151;
+  --accent:#111827; --accent-soft:#37415144; --border:#c8cdd6;
+  --shadow:0 4px 14px rgba(17,24,39,.18);
+}
+:root[data-theme="暗夜黑"][data-mode="dark"] {
+  --bg-start:#050608; --bg-end:#1a1d24;
+  --header-start:#111827; --header-end:#374151;
+  --card-bg:#181b2299; --card-bg-pin:linear-gradient(135deg,#232733,#3b4252);
+  --text-primary:#e5e7eb; --text-secondary:#9ca3af;
+  --accent:#93a3b8; --accent-soft:#37415133; --border:#2a2e37;
+  --shadow:0 4px 14px rgba(0,0,0,.55);
+}

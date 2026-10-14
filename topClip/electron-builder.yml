@@ -1,0 +1,32 @@
+appId: com.topclip.app
+productName: TopClip
+copyright: Copyright © 2026 TopClip
+directories:
+  output: release7
+  buildResources: build
+files:
+  - dist-electron/**/*
+  - dist/**/*
+  - package.json
+  - "!node_modules/**/{CHANGELOG.md,README.md,readme.md,readme,*.d.ts,*.map}"
+  - "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples,doc,docs}"
+asar: true
+asarUnpack:
+  - dist-electron/*.js    # 主进程 JS 解压（加速启动，避免 asar 读取开销）
+compression: maximum
+win:
+  target:
+    - target: portable
+      arch:
+        - x64
+  artifactName: ${productName}.exe
+  requestedExecutionLevel: asInvoker
+portable:
+  artifactName: ${productName}.exe
+  unicode: true
+# 仅保留中英文 locale（减少约 25MB 解压时间）
+electronLanguages:
+  - zh-CN
+  - en-US
+electronDownload:
+  mirror: https://npmmirror.com/mirrors/electron/

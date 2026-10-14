@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AEGIS Tactical Solutions</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav" id="nav">
+    <div class="nav-brand">
+      <span class="nav-logo">AEGIS</span>
+      <span class="nav-divider"></span>
+      <span class="nav-sub">TACTICAL</span>
+    </div>
+    <div class="nav-links">
+      <button class="nav-link active" data-section="operations">OPERATIONS</button>
+      <button class="nav-link" data-section="personnel">PERSONNEL</button>
+      <button class="nav-link" data-section="support">FORCE SUPPORT</button>
+      <button class="nav-link" data-section="equipment">EQUIPMENT</button>
+      <button class="nav-link" data-section="strike">PRECISION STRIKE</button>
+      <button class="nav-link" data-section="escort">SECURITY ESCORT</button>
+    </div>
+    <div class="nav-status">
+      <span class="status-indicator online"></span>
+      <span class="status-text">OPS ACTIVE</span>
+    </div>
+  </nav>
+
+  <!-- 3D Globe Container — full-bleed -->
+  <div class="globe-container" id="globe-container">
+    <canvas id="globe-canvas"></canvas>
+    <div class="globe-overlay">
+      <h1 class="hero-title">PRECISION WITHOUT BORDERS</h1>
+      <p class="hero-subtitle">Private military technology for the modern operational theater</p>
+      <div class="hero-cta">
+        <button class="btn-primary" onclick="document.getElementById('operations').scrollIntoView({behavior:'smooth'})">REQUEST CAPABILITIES</button>
+        <button class="btn-secondary" onclick="document.getElementById('escort').scrollIntoView({behavior:'smooth'})">SECURE ESCORT</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Operations Dashboard -->
+  <section class="section" id="operations">
+    <div class="section-header">
+      <h2 class="section-title">OPERATIONS OVERVIEW</h2>
+      <span class="section-line"></span>
+    </div>
+    <div class="ops-grid">
+      <div class="ops-tile">
+        <div class="ops-tile-icon" data-icon="crosshair"></div>
+        <div class="ops-tile-value">247</div>
+        <div class="ops-tile-label">ACTIVE CONTRACTS</div>
+        <div class="ops-tile-trend up">+12% QoQ</div>
+      </div>
+      <div class="ops-tile">
+        <div class="ops-tile-icon" data-icon="users"></div>
+        <div class="ops-tile-value">3,842</div>
+        <div class="ops-tile-label">DEPLOYED PERSONNEL</div>
+        <div class="ops-tile-trend up">+8% QoQ</div>
+      </div>
+      <div class="ops-tile">
+        <div class="ops-tile-icon" data-icon="globe"></div>
+        <div class="ops-tile-value">38</div>
+        <div class="ops-tile-label">THEATERS OF OPERATION</div>
+        <div class="ops-tile-trend flat">STABLE</div>
+      </div>
+      <div class="ops-tile">
+        <div class="ops-tile-icon" data-icon="shield"></div>
+        <div class="ops-tile-value">99.7%</div>
+        <div class="ops-tile-label">MISSION SUCCESS RATE</div>
+        <div class="ops-tile-trend up">+0.3% YoY</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Personnel Section -->
+  <section class="section" id="personnel">
+    <div class="section-header">
+      <h2 class="section-title">PERSONNEL ACQUISITION</h2>
+      <span class="section-line"></span>
+    </div>
+    <div class="content-split">
+      <div class="content-text">
+        <p class="content-lead">Elite operators sourced from the world&rsquo;s most demanding special forces programs. Every candidate passes a 14-point vetting protocol before operational clearance.</p>
+        <div class="spec-list">
+          <div class="spec-item">
+            <span class="spec-label">ACTIVE RECRUITS</span>
+            <span class="spec-value">1,204</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">CLEARANCE RATE</span>
+            <span class="spec-value">12.4%</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">AVG. EXPERIENCE</span>
+            <span class="spec-value">11.2 YRS</span>
+          </div>
+          <div class="spec-item">
+            <span class="spec-label">SPECIALTIES</span>
+            <span class="spec-value">47</span>
+          </div>
+        </div>
+      </div>
+      <div class="content-visual" id="personnel-visual">
+        <canvas id="personnel-radar"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Force Support Section -->
+  <section class="section" id="support">
+    <div class="section-header">
+      <h2 class="section-title">FORCE SUPPORT</h2>
+      <span class="section-line"></span>
+    </div>
+    <div class="content-split reverse">
+      <div class="content-visual" id="support-visual">
+        <div class="hex-grid" id="hex-grid"></div>
+      </div>
+      <div class="content-text">
+        <p class="content-lead">Integrated logistics, intelligence, and fire support for expeditionary operations. Real-time satellite feeds, drone overwatch, and ground logistics coordinated from a single command node.</p>
+        <div class="capability-tags">
+          <span class="tag">INTELLIGENCE</span>
+          <span class="tag">LOGISTICS</span>
+          <span class="tag">FIRE SUPPORT</span>
+          <span class="tag">DRONE FLEET</span>
+          <span class="tag">SATCOM</span>
+          <span class="tag">MEDEVAC</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Equipment Section -->
+  <section class="section" id="equipment">
+    <div class="section-header">
+      <h2 class="section-title">EQUIPMENT &amp; ARMS</h2>
+      <span class="section-line"></span>
+    </div>
+    <div class="equipment-gallery">
+      <div class="eq-item">
+        <div class="eq-visual" id="eq-visual-1">
+          <canvas class="eq-canvas" data-id="1"></canvas>
+        </div>
+        <div class="eq-specs">
+          <div class="eq-name">PHANTOM-X UAV</div>
+          <div class="eq-meta">
+            <span>ENDURANCE: 38H</span>
+            <span>PAYLOAD: 450KG</span>
+            <span>CEILING: FL600</span>
+          </div>
+          <div class="eq-price">STARTING $4.2M</div>
+        </div>
+      </div>
+      <div class="eq-item">
+        <div class="eq-visual" id="eq-visual-2">
+          <canvas class="eq-canvas" data-id="2"></canvas>
+        </div>
+        <div class="eq-specs">
+          <div class="eq-name">ARMORED FLEET</div>
+          <div class="eq-meta">
+            <span>BALLISTIC: STANAG 4569 LV4</span>
+            <span>BLAST: 10KG TNT</span>
+            <span>FLEET SIZE: 12+ UNITS</span>
+          </div>
+          <div class="eq-price">PACKAGE FROM $18M</div>
+        </div>
+      </div>
+      <div class="eq-item">
+        <div class="eq-visual" id="eq-visual-3">
+          <canvas class="eq-canvas" data-id="3"></canvas>
+        </div>
+        <div class="eq-specs">
+          <div class="eq-name">PERSONAL KIT SYSTEM</div>
+          <div class="eq-meta">
+            <span>WEIGHT: 18KG</span>
+            <span>MODULES: 14</span>
+            <span>C4ISR INTEGRATED</span>
+          </div>
+          <div class="eq-price">UNIT $34K</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Precision Strike Section -->
+  <section class="section" id="strike">
+    <div class="section-header">
+      <h2 class="section-title">PRECISION STRIKE</h2>
+      <span class="section-line"></span>
+    </div>
+    <div class="content-split">
+      <div class="content-text">
+        <p class="content-lead">On-demand kinetic effects delivered anywhere on the globe within 90 minutes of authorization. Cruise missiles, loitering munitions, and directed-energy systems operated by certified strike controllers.</p>
+        <div class="strike-stats">
+          <div class="stat-block">
+            <span class="stat-number">90</span>
+            <span class="stat-unit">MIN</span>
+            <span class="stat-desc">Response Window</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-number">0.4</span>
+            <span class="stat-unit">M CEP</span>
+            <span class="stat-desc">Circular Error Probable</span>
+          </div>
+          <div class="stat-block">
+            <span class="stat-number">24</span>
+            <span class="stat-unit">PLATFORMS</span>
+            <span class="stat-desc">Delivery Systems</span>
+          </div>
+        </div>
+      </div>
+      <div class="content-visual" id="strike-visual">
+        <canvas id="strike-map"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Security Escort Section -->
+  <section class="section" id="escort">
+    <div class="section-header">
+      <h2 class="section-title">SECURITY ESCORT</h2>
+      <span class="section-line"></span>
+    </div>
+    <div class="content-split reverse">
+      <div class="content-visual" id="escort-visual">
+        <canvas id="escort-radar"></canvas>
+      </div>
+      <div class="content-text">
+        <p class="content-lead">Armored convoy protection for high-value transports through contested zones. Multi-layered defense with counter-IED, electronic warfare, and aerial overwatch capabilities.</p>
+        <div class="escort-packages">
+          <div class="package-tier">
+            <span class="tier-name">TIER I &mdash; EXECUTIVE</span>
+            <span class="tier-desc">Single principal, 4-man detail, armored SUV</span>
+          </div>
+          <div class="package-tier">
+            <span class="tier-name">TIER II &mdash; CONVOY</span>
+            <span class="tier-desc">3-vehicle formation, counter-IED, drone overwatch</span>
+          </div>
+          <div class="package-tier">
+            <span class="tier-name">TIER III &mdash; THEATER</span>
+            <span class="tier-desc">Full company deployment, helicopter QRF, EW suite</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-brand">AEGIS TACTICAL SOLUTIONS</div>
+      <div class="footer-cert">
+        <span>ISO 18788:2015 CERTIFIED</span>
+        <span>ITAR COMPLIANT</span>
+        <span>MONTREUX DOCUMENT SIGNATORY</span>
+      </div>
+      <div class="footer-contact">
+        <span>SIGNAL: AEGIS.OPS</span>
+        <span>ENCRYPTED: 4096-RSA</span>
+        <span>QRF HOTLINE: +1-555-0729</span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="js/scene.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

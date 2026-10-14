@@ -1,0 +1,18 @@
+# .NET 构建产物
+bin/
+obj/
+dist/
+
+# 项目内 .NET SDK 与临时文件
+.dotnet/
+tools/*.zip
+tools/*.tar.gz
+tools/**/*.zip
+tools/**/*.tar.gz
+
+# Visual Studio / Rider / VS Code 用户文件
+.vs/
+.idea/
+*.user
+*.suo
+

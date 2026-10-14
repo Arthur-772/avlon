@@ -1,0 +1,46 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "EasyMD",
+  "version": "0.3.0",
+  "identifier": "com.lmworkstation.easymd",
+  "build": {
+    "beforeDevCommand": "exit 0",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "exit 0",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "EasyMD",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 820,
+        "minHeight": 520,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost",
+      "devCsp": "default-src 'self' http://localhost:5173 ws://localhost:5173; script-src 'self' http://localhost:5173; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost ws://localhost:5173"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "icon": ["icons/icon.ico", "icons/128x128.png", "icons/32x32.png"],
+    "fileAssociations": [
+      {
+        "ext": ["md", "markdown"],
+        "name": "EasyMD.Markdown",
+        "description": "Markdown Document"
+      }
+    ],
+    "windows": {
+      "nsis": {
+        "languages": ["SimpChinese", "English"],
+        "installMode": "currentUser"
+      }
+    }
+  }
+}

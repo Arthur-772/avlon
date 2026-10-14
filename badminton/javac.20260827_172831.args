@@ -1,0 +1,16 @@
+-source
+8
+-target
+8
+-bootclasspath
+E:\\opt\\android-sdk\\platforms\\android-36\\android.jar
+-encoding
+UTF-8
+-d
+E:\\opt\\android-sdk\\build-tools\\classes
+E:\\opt\\LMworkstation\\badminton\\app\\src\\com\\booking\\court\\AlarmReceiver.java
+E:\\opt\\LMworkstation\\badminton\\app\\src\\com\\booking\\court\\BookingConfig.java
+E:\\opt\\LMworkstation\\badminton\\app\\src\\com\\booking\\court\\BookingService.java
+E:\\opt\\LMworkstation\\badminton\\app\\src\\com\\booking\\court\\MainActivity.java
+E:\\opt\\LMworkstation\\badminton\\app\\src\\com\\booking\\court\\NotificationHelper.java
+E:\\opt\\android-sdk\\build-tools\\com\\booking\\court\\R.java

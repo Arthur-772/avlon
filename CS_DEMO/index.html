@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="data:," />
+  <title>CS_DEMO - FPS Demo</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: monospace; }
+    canvas { display: block; }
+    #crosshair {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 4px; height: 4px; background: rgba(255,255,255,0.9);
+      border-radius: 50%; pointer-events: none; z-index: 10;
+    }
+    #crosshair::before, #crosshair::after {
+      content: ''; position: absolute; background: rgba(255,255,255,0.6);
+    }
+    #crosshair::before { top: -8px; left: 1.5px; width: 1px; height: 20px; }
+    #crosshair::after { left: -8px; top: 1.5px; height: 1px; width: 20px; }
+    #hit-marker {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 16px; height: 16px; border: 2px solid #ff3333; border-radius: 50%;
+      pointer-events: none; z-index: 10; opacity: 0; transition: opacity 0.15s;
+    }
+    #info {
+      position: fixed; bottom: 20px; left: 20px;
+      color: rgba(255,255,255,0.7); font-size: 13px;
+      pointer-events: none; z-index: 10;
+    }
+    #lock-prompt {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      color: rgba(255,255,255,0.9); font-size: 18px; text-align: center;
+      background: rgba(0,0,0,0.7); padding: 16px 32px; border-radius: 4px;
+      pointer-events: none; z-index: 20;
+    }
+  </style>
+</head>
+<body>
+  <div id="crosshair"></div>
+  <div id="hit-marker"></div>
+  <div id="info">WASD: Move | SPACE: Jump | CLICK: Shoot | ESC: Release Mouse</div>
+  <div id="lock-prompt">Click to play</div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

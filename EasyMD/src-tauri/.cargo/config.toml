@@ -1,0 +1,8 @@
+[source.crates-io]
+replace-with = "local-mirror"
+
+[source.local-mirror]
+registry = "sparse+http://localhost:8127/index/"
+
+[net]
+retry = 5

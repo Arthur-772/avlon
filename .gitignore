@@ -1,0 +1,94 @@
+# ============================================================
+# LMworkstation - Root .gitignore
+# ============================================================
+
+# --- Toolchain binaries (install separately, see toolchain/README.md) ---
+.tools/*
+!.tools/dotnet-install.ps1
+toolchain/*
+!toolchain/activate.ps1
+!toolchain/README.md
+!toolchain/_w64.json
+
+# --- Python ---
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# --- Node.js ---
+node_modules/
+
+# --- Build artifacts ---
+dist/
+build/
+bin/
+obj/
+out/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# --- Rust ---
+target/
+
+# --- .NET ---
+*.pdb
+
+# --- Environment / secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Database ---
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# --- IDE / Editor ---
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+.history/
+.zed/
+
+# --- Logs / Cache ---
+logs/
+*.log
+.cache/
+.eslintcache
+.gocache/
+.gomodcache/
+tiktoken_cache/
+
+# --- OS ---
+Thumbs.db
+desktop.ini
+
+# --- Misc ---
+*.tmp
+*.bak
+
+# --- Bundled runtimes (install separately) ---
+**/.runtime/
+
+# --- Electron build/release artifacts ---
+dist-electron/
+release*/
+*.asar
+
+# --- Package archives (reproducible, install via package managers) ---
+*.whl
+*.zip
+*.7z
+*.crate
+
+# --- Badminton: imageio-ffmpeg pip package (reinstall via pip) ---
+badminton/tools/imageio_ffmpeg/
+badminton/tools/imageio_ffmpeg-*.whl
+badminton/tools/imageio_ffmpeg.zip

@@ -1,0 +1,13 @@
+{
+  "name": "aegis-tactical",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AEGIS Tactical Solutions — Private Military Technology",
+  "scripts": {
+    "dev": "npx serve . -p 3000 --no-clipboard",
+    "start": "npx serve . -p 3000 --no-clipboard"
+  },
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}
