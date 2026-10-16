@@ -50,6 +50,14 @@ fn mtime_ns(path: &Path) -> Option<u64> {
     Some(d.as_nanos() as u64)
 }
 
+fn mtime_ns_string(path: &Path) -> Option<String> {
+    mtime_ns(path).map(|value| value.to_string())
+}
+
+fn parse_mtime_ns(value: &str) -> Option<u64> {
+    value.parse::<u64>().ok()
+}
+
 fn canonical_dir(path: &Path) -> Result<PathBuf, String> {
     let dir = path
         .parent()
@@ -112,17 +120,24 @@ fn replace_file(source: &Path, target: &Path) -> Result<(), String> {
 
     let from = wide(source);
     let to = wide(target);
-    let ok = unsafe {
-        MoveFileExW(
-            from.as_ptr(),
-            to.as_ptr(),
-            MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH,
-        )
-    };
-    if ok == 0 {
-        return Err(format!("atomic replace failed: {}", unsafe { GetLastError() }));
+    for attempt in 0..5 {
+        let ok = unsafe {
+            MoveFileExW(
+                from.as_ptr(),
+                to.as_ptr(),
+                MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH,
+            )
+        };
+        if ok != 0 {
+            return Ok(());
+        }
+        let error = unsafe { GetLastError() };
+        if error != 5 && error != 32 {
+            return Err(format!("atomic replace failed: {error}"));
+        }
+        std::thread::sleep(std::time::Duration::from_millis(10 << attempt));
     }
-    Ok(())
+    Err("atomic replace failed: target remained locked".to_string())
 }
 
 #[cfg(not(windows))]
@@ -302,7 +317,7 @@ fn trust_directory(state: tauri::State<AppState>, path: String) -> Result<(), St
 #[derive(serde::Serialize)]
 struct ReadFileResult {
     contents_base64: String,
-    mtime_ns: Option<u64>,
+    mtime_ns: Option<String>,
 }
 
 #[tauri::command]
@@ -315,30 +330,30 @@ fn read_file_bytes(state: tauri::State<AppState>, path: String) -> Result<ReadFi
     let bytes = std::fs::read(p).map_err(|e| format!("read failed: {e}"))?;
     Ok(ReadFileResult {
         contents_base64: BASE64.encode(bytes),
-        mtime_ns: mtime_ns(p),
+        mtime_ns: mtime_ns_string(p),
     })
 }
 
-/// Returns the new mtime (nanoseconds) so the frontend can detect external
-/// modifications on the next save.
+/// Returns the new mtime as a string. Nanosecond timestamps exceed JavaScript's
+/// Number.MAX_SAFE_INTEGER, so they must not cross the IPC boundary as numbers.
 #[tauri::command]
 fn write_text_file(
     state: tauri::State<AppState>,
     path: String,
     contents: String,
-    expected_mtime_ns: Option<u64>,
-) -> Result<u64, String> {
+    expected_mtime_ns: Option<String>,
+) -> Result<String, String> {
     let p = Path::new(&path);
     ensure_trusted(state.inner(), p)?;
     if let Some(expected) = expected_mtime_ns {
-        match mtime_ns(p) {
-            Some(current) if current == expected => {}
+        match parse_mtime_ns(&expected).zip(mtime_ns(p)) {
+            Some((expected, current)) if current == expected => {}
             _ => return Err("external modified".to_string()),
         }
     }
     backup_existing(p)?;
     atomic_write(p, contents.as_bytes())?;
-    mtime_ns(p).ok_or_else(|| "cannot read new mtime".to_string())
+    mtime_ns_string(p).ok_or_else(|| "cannot read new mtime".to_string())
 }
 
 fn session_path(app: &tauri::AppHandle) -> Result<PathBuf, String> {
@@ -703,6 +718,15 @@ mod tests {
         atomic_write(&target, b"external").unwrap();
         let changed = mtime_ns(&target).unwrap();
         assert_ne!(m, changed, "mtime must change after external write");
+    }
+
+    #[test]
+    fn mtime_ipc_string_preserves_precision() {
+        let value: u64 = 1_800_000_000_123_456_789;
+        let serialized = value.to_string();
+        assert_eq!(parse_mtime_ns(&serialized), Some(value));
+        // This assertion documents why timestamps must not be exposed as f64.
+        assert_ne!(serialized.parse::<f64>().unwrap() as u64, value);
     }
 
     #[test]

@@ -1,5 +1,6 @@
 import { Crepe } from "@milkdown/crepe";
 import { editorViewCtx } from "@milkdown/kit/core";
+import { columnResizingPlugin } from "@milkdown/kit/preset/gfm";
 import { TextSelection } from "@milkdown/kit/prose/state";
 import type { EditorView } from "@milkdown/kit/prose/view";
 import "@milkdown/crepe/theme/common/style.css";
@@ -10,20 +11,27 @@ import { invoke } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { open as openDialog, save as saveDialog } from "@tauri-apps/plugin-dialog";
+import { diagramPlugins } from "./mermaid";
+import {
+  clampTextFontSize,
+  textStyleRemark,
+  textStyleMark,
+} from "./text-style";
+import type { TextStyleAttrs } from "./text-style";
 
 import { findMatches, replaceAllMatches, replaceMatch, type TextMatch } from "./find";
 import { translate, type I18nKey, type Lang } from "./i18n";
 import { normalizeDocumentPath, sameDocumentPath } from "./paths";
 import {
   clampAutosaveInterval,
-  clampZoom,
+  clampEditorFontSize,
   addRecentFile,
   readStoredSettings,
   saveSettings,
   type Settings,
 } from "./settings";
 import { parseSession, serializeSession } from "./session";
-import { countWords, parseOutline } from "./outline";
+import { countWords, findActiveOutlineIndex, parseOutline } from "./outline";
 
 import chevronDownSvg from "lucide-static/icons/chevron-down.svg?raw";
 import chevronUpSvg from "lucide-static/icons/chevron-up.svg?raw";
@@ -37,6 +45,12 @@ import xSvg from "lucide-static/icons/x.svg?raw";
 import minusSvg from "lucide-static/icons/minus.svg?raw";
 import plusSvg from "lucide-static/icons/plus.svg?raw";
 import rotateCcwSvg from "lucide-static/icons/rotate-ccw.svg?raw";
+import aArrowDownSvg from "lucide-static/icons/a-arrow-down.svg?raw";
+import aArrowUpSvg from "lucide-static/icons/a-arrow-up.svg?raw";
+import typeSvg from "lucide-static/icons/type.svg?raw";
+import paletteSvg from "lucide-static/icons/palette.svg?raw";
+import highlighterSvg from "lucide-static/icons/highlighter.svg?raw";
+import eraserSvg from "lucide-static/icons/eraser.svg?raw";
 
 const ICONS: Record<string, string> = {
   "file-plus": filePlusSvg,
@@ -49,6 +63,12 @@ const ICONS: Record<string, string> = {
   minus: minusSvg,
   plus: plusSvg,
   "rotate-ccw": rotateCcwSvg,
+  "a-arrow-down": aArrowDownSvg,
+  "a-arrow-up": aArrowUpSvg,
+  type: typeSvg,
+  palette: paletteSvg,
+  highlighter: highlighterSvg,
+  eraser: eraserSvg,
   "chevron-up": chevronUpSvg,
   "chevron-down": chevronDownSvg,
 };
@@ -65,7 +85,7 @@ interface Doc {
   markdown: string;
   dirty: boolean;
   scrollTop: number;
-  mtimeNs: number | null;
+  mtimeNs: string | null;
   welcome: boolean;
 }
 
@@ -93,6 +113,25 @@ const state: AppState = {
 };
 
 const t = (key: I18nKey) => translate(state.settings.lang, key);
+
+let outlineScrollFrame: number | null = null;
+
+function appendDebugError(message: string): void {
+  const panel = document.getElementById("debug-panel");
+  if (!panel) return;
+  panel.classList.remove("hidden");
+  const item = document.createElement("div");
+  item.textContent = message;
+  panel.appendChild(item);
+}
+
+window.addEventListener("error", (event) => {
+  appendDebugError(event.error?.stack ?? event.message ?? "Unknown error");
+});
+window.addEventListener("unhandledrejection", (event) => {
+  const reason = (event as PromiseRejectionEvent).reason;
+  appendDebugError(reason?.stack ?? String(reason ?? "Unhandled rejection"));
+});
 
 const openingPaths = new Set<string>();
 const saveLocks = new Map<string, Promise<unknown>>();
@@ -165,12 +204,12 @@ async function trustPath(path: string): Promise<void> {
 
 async function readTextFile(
   path: string,
-): Promise<{ content: string; mtimeNs: number | null }> {
+): Promise<{ content: string; mtimeNs: string | null }> {
   if (!isTauri) {
     return { content: await fetch(path).then((r) => r.text()), mtimeNs: null };
   }
   await trustPath(path);
-  const r = await invoke<{ contents_base64: string; mtime_ns: number | null }>(
+  const r = await invoke<{ contents_base64: string; mtime_ns: string | null }>(
     "read_file_bytes",
     { path },
   );
@@ -298,18 +337,134 @@ function updateStatus(): void {
   $("status-words").textContent = `${t("words")} ${countWords(doc?.markdown ?? "")}`;
 }
 
-function updateZoomUi(): void {
-  $("status-zoom").textContent = `${Math.round(state.settings.zoom * 100)}%`;
+function updateFontUi(): void {
+  $("status-zoom").textContent = `${state.settings.editorFontSize}px`;
   document.documentElement.style.setProperty(
-    "--app-zoom",
-    String(state.settings.zoom),
+    "--editor-font-size",
+    `${state.settings.editorFontSize}px`,
   );
 }
 
-function setZoom(z: number): void {
-  state.settings.zoom = clampZoom(z);
+function setEditorFontSize(size: number): void {
+  state.settings.editorFontSize = clampEditorFontSize(size);
   saveSettings(state.settings);
-  updateZoomUi();
+  updateFontUi();
+}
+
+function selectionTextFontSize(
+  view: EditorView,
+  markType: ReturnType<typeof textStyleMark.type>,
+): number {
+  const { from, to } = view.state.selection;
+  let selected = 0;
+  view.state.doc.nodesBetween(from, to, (node) => {
+    if (!node.isText) return;
+    selected = Math.max(
+      selected,
+      clampTextFontSize(
+        Number(
+          node.marks.find((mark) => mark.type === markType)?.attrs.size ??
+            state.settings.editorFontSize,
+        ),
+      ),
+    );
+  });
+  return selected || state.settings.editorFontSize;
+}
+
+function selectionTextStyle(
+  view: EditorView,
+  markType: ReturnType<typeof textStyleMark.type>,
+): TextStyleAttrs {
+  const { from, to } = view.state.selection;
+  const result: TextStyleAttrs = { size: null, color: null, background: null };
+  let found = false;
+  view.state.doc.nodesBetween(from, to, (node) => {
+    if (!node.isText) return;
+    const mark = node.marks.find((m) => m.type === markType);
+    if (!mark) return;
+    found = true;
+    if (mark.attrs.size != null) {
+      const size = clampTextFontSize(Number(mark.attrs.size));
+      result.size = result.size === null ? size : Math.max(result.size, size);
+    }
+    if (mark.attrs.color) result.color = String(mark.attrs.color);
+    if (mark.attrs.background) result.background = String(mark.attrs.background);
+  });
+  if (!found) result.size = state.settings.editorFontSize;
+  return result;
+}
+
+function adjustSelectionFontSize(delta: number | null): void {
+  if (!state.crepe || state.sourceMode) return;
+  state.crepe.editor.action((ctx) => {
+    const view = ctx.get(editorViewCtx);
+    const { empty, from, to } = view.state.selection;
+    if (empty) return;
+    const markType = textStyleMark.type(ctx);
+    const transaction = view.state.tr;
+    if (delta === null) {
+      const existing = selectionTextStyle(view, markType);
+      existing.size = null;
+      if (existing.color === null && existing.background === null) {
+        transaction.removeMark(from, to, markType);
+      } else {
+        transaction.addMark(from, to, markType.create(existing));
+      }
+    } else {
+      const existing = selectionTextStyle(view, markType);
+      existing.size = clampTextFontSize(
+        (existing.size ?? state.settings.editorFontSize) + delta,
+      );
+      transaction.addMark(from, to, markType.create(existing));
+    }
+    try {
+      view.dispatch(transaction);
+      view.focus();
+    } catch (error) {
+      appendDebugError(`Font size failed: ${error instanceof Error ? error.stack : String(error)}`);
+    }
+  });
+}
+
+function applySelectionTextStyle(patch: Partial<TextStyleAttrs>): void {
+  if (!state.crepe || state.sourceMode) return;
+  state.crepe.editor.action((ctx) => {
+    const view = ctx.get(editorViewCtx);
+    const { empty, from, to } = view.state.selection;
+    if (empty) return;
+    try {
+    const markType = textStyleMark.type(ctx);
+      const existing = selectionTextStyle(view, markType);
+      const merged: TextStyleAttrs = { ...existing, ...patch };
+      if (merged.size === null && merged.color === null && merged.background === null) {
+        view.dispatch(view.state.tr.removeMark(from, to, markType));
+      } else {
+        view.dispatch(view.state.tr.addMark(from, to, markType.create(merged)));
+      }
+    } catch (error) {
+      console.error("[EasyMD] applySelectionTextStyle failed:", error);
+      appendDebugError(`Text style failed: ${error instanceof Error ? error.stack : String(error)}`);
+    }
+    view.focus();
+  });
+}
+
+function clearSelectionTextStyle(): void {
+  if (!state.crepe || state.sourceMode) return;
+  state.crepe.editor.action((ctx) => {
+    const view = ctx.get(editorViewCtx);
+    const { from, to } = view.state.selection;
+    if (from === to) return;
+    try {
+    const markType = textStyleMark.type(ctx);
+      view.dispatch(view.state.tr.removeMark(from, to, markType));
+    } catch (error) {
+      console.error("[EasyMD] clearSelectionTextStyle failed:", error);
+      appendDebugError(`Clear style failed: ${error instanceof Error ? error.stack : String(error)}`);
+    }
+    view.focus();
+  });
 }
 
 function markDirty(dirty: boolean): void {
@@ -346,18 +501,38 @@ async function createEditor(markdown: string): Promise<void> {
       },
     },
   });
+  crepe.editor.use(await diagramPlugins());
+  crepe.editor.use(columnResizingPlugin);
+  crepe.editor.use([...textStyleRemark, textStyleMark]);
   crepe.on((listener) => {
     listener.markdownUpdated((_ctx, md) => {
       const doc = activeDoc();
-      if (doc) doc.markdown = md;
-      markDirty(true);
+      if (doc) {
+        if (doc.markdown === md) return;
+        doc.markdown = md;
+        markDirty(true);
+      }
       updateOutline();
     });
   });
   await crepe.create();
   state.crepe = crepe;
+  updateActiveOutline();
+  (window as unknown as Record<string, unknown>).__EASYMD_DEBUG__ = {
+    editor: crepe.editor,
+    textStyleMark,
+    TextSelection,
+    editorViewCtx,
+    state,
+    adjustSelectionFontSize,
+    applySelectionTextStyle,
+    clearSelectionTextStyle,
+  };
   const doc = activeDoc();
-  if (doc && doc.id === state.activeId) doc.markdown = markdown;
+  if (doc && doc.id === state.activeId) {
+    const normalized = state.crepe?.getMarkdown() ?? markdown;
+    doc.markdown = normalized;
+  }
 }
 
 function updateOutline(): void {
@@ -379,6 +554,32 @@ function updateOutline(): void {
     el.addEventListener("click", () => jumpToHeading(item.index));
     list.appendChild(el);
   }
+}
+
+function setActiveOutline(index: number): void {
+  const items = $("outline-list").querySelectorAll<HTMLElement>(".outline-item");
+  items.forEach((item) => {
+    const active = item.dataset.index === String(index);
+    item.classList.toggle("active", active);
+    if (active) item.scrollIntoView({ block: "nearest" });
+  });
+}
+
+function updateActiveOutline(): void {
+  if (!state.outlineVisible || state.sourceMode) return;
+  const editor = $("editor");
+  const headings = Array.from(
+    editor.querySelectorAll<HTMLElement>("h1,h2,h3,h4,h5,h6"),
+  ).map((heading) => heading.getBoundingClientRect());
+  setActiveOutline(findActiveOutlineIndex(headings, editor.scrollTop));
+}
+
+function scheduleActiveOutlineUpdate(): void {
+  if (outlineScrollFrame !== null) return;
+  outlineScrollFrame = window.requestAnimationFrame(() => {
+    outlineScrollFrame = null;
+    updateActiveOutline();
+  });
 }
 
 function jumpToHeading(index: number): void {
@@ -487,7 +688,9 @@ async function activateActiveDoc(): Promise<void> {
   const doc = activeDoc();
   if (!doc) return;
   if (state.sourceMode) ($("source") as HTMLTextAreaElement).value = doc.markdown;
+  const initialDirty = doc.dirty;
   await createEditor(doc.markdown);
+  doc.dirty = initialDirty;
   markDirty(doc.dirty);
   updateTitle();
   updateStatus();
@@ -500,6 +703,7 @@ async function activateActiveDoc(): Promise<void> {
       } else {
         $("editor").scrollTop = doc.scrollTop;
       }
+      updateActiveOutline();
     }),
   );
 }
@@ -581,7 +785,7 @@ async function saveDoc(
     }
     if (isTauri) {
       try {
-        doc.mtimeNs = await invoke<number>("write_text_file", {
+        doc.mtimeNs = await invoke<string>("write_text_file", {
           path,
           contents: content,
           expectedMtimeNs: doc.mtimeNs,
@@ -591,7 +795,7 @@ async function saveDoc(
         const choice = await confirmConflict();
         if (choice === "cancel") return false;
         if (choice === "overwrite") {
-          doc.mtimeNs = await invoke<number>("write_text_file", {
+          doc.mtimeNs = await invoke<string>("write_text_file", {
             path,
             contents: content,
             expectedMtimeNs: null,
@@ -795,6 +999,8 @@ function hideRecentPanel(): void {
 
 function applySettingsToUi(): void {
   ($("set-lang") as HTMLSelectElement).value = state.settings.lang;
+  ($("set-editor-font-size") as HTMLInputElement).value =
+    String(state.settings.editorFontSize);
   ($("set-theme") as HTMLSelectElement).value = state.settings.theme;
   ($("set-autosave") as HTMLInputElement).checked = state.settings.autosave;
   ($("set-autosave-interval") as HTMLInputElement).value =
@@ -807,7 +1013,7 @@ function applySettingsToUi(): void {
     state.settings.imageStrategy;
   applyTheme();
   applyI18n();
-  updateZoomUi();
+  updateFontUi();
 }
 
 async function refreshAssociationCheckbox(): Promise<void> {
@@ -834,6 +1040,7 @@ function setupUi(): void {
     state.outlineVisible = !state.outlineVisible;
     $("outline-panel").style.display = state.outlineVisible ? "" : "none";
     $("btn-outline").classList.toggle("active", state.outlineVisible);
+    updateActiveOutline();
   });
   $("btn-outline-close").addEventListener("click", () => {
     state.outlineVisible = false;
@@ -847,15 +1054,64 @@ function setupUi(): void {
   $("btn-settings-close").addEventListener("click", () =>
     $("settings-modal").classList.add("hidden"),
   );
-  $("btn-zoom-in").addEventListener("click", () => setZoom(state.settings.zoom + 0.1));
-  $("btn-zoom-out").addEventListener("click", () => setZoom(state.settings.zoom - 0.1));
-  $("btn-zoom-reset").addEventListener("click", () => setZoom(1));
+  $("btn-zoom-in").addEventListener("click", () =>
+    setEditorFontSize(state.settings.editorFontSize + 1),
+  );
+  $("btn-zoom-out").addEventListener("click", () =>
+    setEditorFontSize(state.settings.editorFontSize - 1),
+  );
+  $("btn-zoom-reset").addEventListener("click", () => setEditorFontSize(16));
+  $("btn-selection-font-in").addEventListener("click", () =>
+    adjustSelectionFontSize(1),
+  );
+  $("btn-selection-font-out").addEventListener("click", () =>
+    adjustSelectionFontSize(-1),
+  );
+  $("btn-selection-font-reset").addEventListener("click", () =>
+    adjustSelectionFontSize(null),
+  );
+  // Prevent toolbar buttons from stealing focus and clearing the editor selection.
+  document.querySelectorAll<HTMLElement>(".toolbar .tb-btn").forEach((btn) => {
+    btn.addEventListener("mousedown", (e) => e.preventDefault());
+  });
+  $("btn-text-color").addEventListener("click", () => {
+    const picker = $("picker-text-color") as HTMLInputElement;
+    picker.click();
+  });
+  ($("picker-text-color") as HTMLInputElement).addEventListener("input", (e) => {
+    const color = (e.target as HTMLInputElement).value;
+    applySelectionTextStyle({ color });
+  });
+  $("btn-text-bg").addEventListener("click", () => {
+    const picker = $("picker-text-bg") as HTMLInputElement;
+    picker.click();
+  });
+  ($("picker-text-bg") as HTMLInputElement).addEventListener("input", (e) => {
+    const background = (e.target as HTMLInputElement).value;
+    applySelectionTextStyle({ background });
+  });
+  $("btn-text-style-clear").addEventListener("click", () =>
+    clearSelectionTextStyle(),
+  );
 
   ($("set-lang") as HTMLSelectElement).addEventListener("change", (e) => {
     state.settings.lang = (e.target as HTMLSelectElement).value as Lang;
     saveSettings(state.settings);
     applySettingsToUi();
   });
+  ($("set-editor-font-size") as HTMLInputElement).addEventListener(
+    "change",
+    (e) => {
+      state.settings.editorFontSize = clampEditorFontSize(
+        Number((e.target as HTMLInputElement).value),
+      );
+      (e.target as HTMLInputElement).value = String(
+        state.settings.editorFontSize,
+      );
+      saveSettings(state.settings);
+      updateFontUi();
+    },
+  );
   ($("set-theme") as HTMLSelectElement).addEventListener("change", (e) => {
     state.settings.theme = (e.target as HTMLSelectElement).value as Settings["theme"];
     saveSettings(state.settings);
@@ -915,6 +1171,21 @@ function setupUi(): void {
     } else if (e.ctrlKey && (e.key === "w" || e.key === "W")) {
       e.preventDefault();
       void closeTab(state.activeId);
+    } else if (e.ctrlKey && e.altKey && (e.key === "=" || e.key === "+")) {
+      e.preventDefault();
+      adjustSelectionFontSize(1);
+    } else if (e.ctrlKey && e.altKey && e.key === "-") {
+      e.preventDefault();
+      adjustSelectionFontSize(-1);
+    } else if (e.ctrlKey && e.altKey && e.key === "0") {
+      e.preventDefault();
+      adjustSelectionFontSize(null);
+    } else if (e.ctrlKey && e.altKey && e.key === "c") {
+      e.preventDefault();
+      ($("picker-text-color") as HTMLInputElement).click();
+    } else if (e.ctrlKey && e.altKey && e.key === "b") {
+      e.preventDefault();
+      ($("picker-text-bg") as HTMLInputElement).click();
     } else if (e.ctrlKey && (e.key === "f" || e.key === "F")) {
       e.preventDefault();
       openFindBar(false);
@@ -923,13 +1194,13 @@ function setupUi(): void {
       openFindBar(true);
     } else if (e.ctrlKey && (e.key === "=" || e.key === "+")) {
       e.preventDefault();
-      setZoom(state.settings.zoom + 0.1);
+      setEditorFontSize(state.settings.editorFontSize + 1);
     } else if (e.ctrlKey && e.key === "-") {
       e.preventDefault();
-      setZoom(state.settings.zoom - 0.1);
+      setEditorFontSize(state.settings.editorFontSize - 1);
     } else if (e.ctrlKey && e.key === "0") {
       e.preventDefault();
-      setZoom(1);
+      setEditorFontSize(16);
     }
   });
 
@@ -941,13 +1212,19 @@ function setupUi(): void {
     updateOutline();
   });
 
+  $("editor").addEventListener("scroll", scheduleActiveOutlineUpdate, {
+    passive: true,
+  });
+
   const editorPane = document.querySelector(".editor-pane") as HTMLElement;
   editorPane.addEventListener(
     "wheel",
     (e) => {
       if (e.ctrlKey) {
         e.preventDefault();
-        setZoom(state.settings.zoom + (e.deltaY < 0 ? 0.1 : -0.1));
+        setEditorFontSize(
+          state.settings.editorFontSize + (e.deltaY < 0 ? 1 : -1),
+        );
       }
     },
     { passive: false },

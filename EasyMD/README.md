@@ -1,6 +1,6 @@
 # EasyMD
 
-轻量 Markdown 桌面编辑器，面向个人日常写作和多文档处理。当前版本：v0.3.0。
+轻量 Markdown 桌面编辑器，面向个人日常写作和多文档处理。当前版本：v0.4.0。
 
 技术栈是 Tauri 2 + Milkdown Crepe：前端负责所见即所得渲染，Rust 后端负责文件 IO、备份、单实例和 Windows 文件关联。
 
@@ -9,9 +9,10 @@
 ### 编辑器
 
 * 所见即所得 Markdown：标题、列表、表格、任务列表、引用、链接、图片、代码块和数学公式
+* 表格列宽拖拽调整；单元格内长文本自动换行，避免遮挡相邻单元格
 * 源码模式（Ctrl+/），直接编辑 Markdown 源文本
 * 查找替换：Ctrl+F / Ctrl+H，覆盖 WYSIWYG 和源码模式
-* 大纲面板、字数统计、标题跳转
+* 大纲面板、当前标题高亮、字数统计、标题跳转
 * Ctrl+滚轮或 Ctrl+=/-/0 调整界面缩放
 
 ### 文件与会话
@@ -68,7 +69,7 @@ Set-Location 'E:\opt\LMworkstation\EasyMD'
 ## 产物与数据位置
 
 * 可执行文件：`src-tauri\target\release\easymd.exe`
-* 安装包：`src-tauri\target\release\bundle\nsis\EasyMD_0.3.0_x64-setup.exe`
+* 安装包：`src-tauri\target\release\bundle\nsis\EasyMD_0.4.0_x64-setup.exe`
 * 会话文件：`%APPDATA%\com.lmworkstation.easymd\session.json`
 
 ## 项目结构

@@ -6,7 +6,7 @@ export const MAX_RECENT_FILES = 10;
 export interface Settings {
   lang: "zh" | "en";
   theme: ThemeSetting;
-  zoom: number;
+  editorFontSize: number;
   autosave: boolean;
   autosaveInterval: number;
   autosaveToast: boolean;
@@ -18,7 +18,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   lang: "zh",
   theme: "system",
-  zoom: 1,
+  editorFontSize: 16,
   autosave: true,
   autosaveInterval: 30,
   autosaveToast: false,
@@ -31,6 +31,12 @@ const STORAGE_KEY = "easymd.settings.v1";
 
 export function clampZoom(z: number): number {
   return Math.min(2, Math.max(0.5, Math.round(z * 10) / 10));
+}
+
+export function clampEditorFontSize(v: number): number {
+  const n = Math.round(Number(v));
+  if (!Number.isFinite(n)) return 16;
+  return Math.min(32, Math.max(12, n));
 }
 
 export function clampAutosaveInterval(v: number): number {
@@ -57,7 +63,12 @@ export function loadSettings(raw: string | null): Settings {
       theme: ["system", "light", "dark"].includes(merged.theme)
         ? merged.theme
         : "system",
-      zoom: clampZoom(Number(merged.zoom) || 1),
+      editorFontSize:
+        parsed.editorFontSize === undefined
+          ? clampEditorFontSize(
+              clampZoom(Number((parsed as { zoom?: number }).zoom) || 1) * 16,
+            )
+          : clampEditorFontSize(Number(parsed.editorFontSize)),
       autosave: Boolean(merged.autosave),
       autosaveInterval: clampAutosaveInterval(Number(merged.autosaveInterval)),
       autosaveToast: Boolean(merged.autosaveToast),

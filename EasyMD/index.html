@@ -21,6 +21,26 @@
         </div>
         <div class="toolbar-spacer"></div>
         <div class="toolbar-group">
+          <button id="btn-selection-font-out" class="tb-btn" data-i18n-title="selectionFontDecrease">
+            <span class="tb-icon" data-icon="a-arrow-down"></span>
+          </button>
+          <button id="btn-selection-font-in" class="tb-btn" data-i18n-title="selectionFontIncrease">
+            <span class="tb-icon" data-icon="a-arrow-up"></span>
+          </button>
+          <button id="btn-selection-font-reset" class="tb-btn" data-i18n-title="selectionFontReset">
+            <span class="tb-icon" data-icon="type"></span>
+          </button>
+          <button id="btn-text-color" class="tb-btn" data-i18n-title="textColor">
+            <span class="tb-icon" data-icon="palette"></span>
+            <input type="color" id="picker-text-color" class="color-picker" value="#e74c3c">
+          </button>
+          <button id="btn-text-bg" class="tb-btn" data-i18n-title="textBackground">
+            <span class="tb-icon" data-icon="highlighter"></span>
+            <input type="color" id="picker-text-bg" class="color-picker" value="#fff34d">
+          </button>
+          <button id="btn-text-style-clear" class="tb-btn" data-i18n-title="clearTextStyle">
+            <span class="tb-icon" data-icon="eraser"></span>
+          </button>
           <button id="btn-source" class="tb-btn" data-i18n-title="sourceMode">
             <span class="tb-icon" data-icon="code"></span>
           </button>
@@ -100,6 +120,10 @@
             </select>
           </label>
           <label class="field">
+            <span data-i18n="editorFontSize"></span>
+            <input type="number" id="set-editor-font-size" min="12" max="32" step="1" />
+          </label>
+          <label class="field">
             <span data-i18n="theme"></span>
             <select id="set-theme">
               <option value="system" data-i18n="themeSystem"></option>
@@ -163,6 +187,7 @@
       </div>
     </div>
     <div id="toast" class="toast hidden"></div>
+    <div id="debug-panel" class="debug-panel hidden"></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

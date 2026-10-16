@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countWords, parseOutline } from "./outline";
+import { countWords, findActiveOutlineIndex, parseOutline } from "./outline";
 
 describe("parseOutline", () => {
   it("parses headings with levels in order", () => {
@@ -33,5 +33,22 @@ describe("countWords", () => {
 
   it("ignores fenced code blocks", () => {
     expect(countWords("正文\n```\nignored_code_words\n```\n")).toBe(2);
+  });
+});
+
+describe("findActiveOutlineIndex", () => {
+  it("selects the nearest heading above the viewport threshold", () => {
+    expect(
+      findActiveOutlineIndex([{ top: 40 }, { top: 180 }, { top: 720 }], 80),
+    ).toBe(0);
+    expect(
+      findActiveOutlineIndex([{ top: 40 }, { top: 90 }, { top: 720 }], 220),
+    ).toBe(1);
+  });
+
+  it("clears the highlight at the top and falls back to the first heading after scrolling", () => {
+    expect(findActiveOutlineIndex([{ top: 280 }, { top: 760 }], 0)).toBe(-1);
+    expect(findActiveOutlineIndex([{ top: 280 }, { top: 760 }], 32)).toBe(0);
+    expect(findActiveOutlineIndex([], 80)).toBe(-1);
   });
 });

@@ -31,3 +31,14 @@ export function countWords(markdown: string): number {
   const words = latin.split(/\s+/).filter((w) => /[A-Za-z0-9]/.test(w)).length;
   return cjk + words;
 }
+
+export function findActiveOutlineIndex(
+  headings: Array<{ top: number }>,
+  scrollTop: number,
+): number {
+  if (headings.length === 0) return -1;
+  for (let index = headings.length - 1; index >= 0; index -= 1) {
+    if (headings[index].top <= 112) return index;
+  }
+  return scrollTop > 0 ? 0 : -1;
+}
