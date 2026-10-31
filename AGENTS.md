@@ -2,13 +2,13 @@
 
 > **适用对象**:任何在 `E:\avlon` 内工作的 AI agent / 自动化工具,不限型号与厂商。
 > **地位**:本工作区最高行为规范;子项目文档、agent 默认习惯、工具默认行为均不得与之冲突。
-> **修订**:本文件为**本机工作区规范**,随 `Branch_OWN` 入库(主机专属分支);修改必须经所有者(用户)同意。
+> **修订**:本文件为工作区规范。**master 为地基模板版**(不对应具体主机);各主机在自己的 `Branch_<主机名>` 分支上定制;修改必须经所有者(用户)同意。
 
 ## 0. 现状速览(易变区:只记事实,不立规则;状态变化仅更新本节)
 
-- 本地分支:**`Branch_OWN`**(HEAD,唯一分支,基点 `b1583ed`);远程 `origin` **未关联**。
-- 远程仓库 https://github.com/Arthur-772/avlon 现有:`Branch_DP`(即原 `main`,已冻结,见 §2)、`master`(默认分支,内容未审)。
-- 推送目标(待所有者发起):`Branch_OWN`。
+- 本分支为**主干地基**,不对应任何具体主机,仅承载工作区体系(规范 / OPBR 分工 / 模板 / 环境框架)。
+- 分支体系:`master` = 初始化地基;`Branch_<主机名>` = 各主机专属分支,从本分支 fork 后独立演进;`PD_<项目名>` = 成熟项目分支。
+- 各主机分支的 §0 记录该主机自己的现状(本地分支、远程关联、冻结清单等)。
 
 ## 1. 工作区与权限
 
@@ -18,14 +18,14 @@
 
 ## 2. Git 仓库
 
-1. 本目录对应远程仓库 **https://github.com/Arthur-772/avlon**(单一 monorepo)。本机使用独立分支 **`Branch_OWN`**——所有者在本主机的专属分支,独立演进;不使用远程 `Branch_XXX` 的历史内容。
+1. 本目录对应远程仓库 **https://github.com/Arthur-772/avlon**(单一 monorepo)。各主机使用独立分支 **`Branch_<主机名>`**(所有者在对应主机的专属分支,独立演进);不使用其他主机分支(`Branch_XXX`)的历史内容。
 2. **git 配置只写本地**:单次 `git -c <k>=<v>`;仓库级 `git config --local`;需要全局效果时 `GIT_CONFIG_GLOBAL=E:\avlon\.env\git\gitconfig`。`--global` / `--system` 一律禁止。
 3. **红线**:
    - 未经所有者明确要求不得 `push`;不得改写已推送历史、强推、变更远程配置;不得用 `pull`/`reset` 覆盖本地未提交改动。
-   - 远程 `Branch_XXX` 冻结,禁止拉取/合并;`master` 等其余远程分支未经确认不得拉取。**唯一例外:已推送的 `Branch_OWN` 可正常 fetch + rebase 同步自身**。
+   - 其他主机的 `Branch_XXX` 分支冻结,禁止拉取/合并;任何远程分支未经确认不得拉取。**唯一例外:已推送的本主机分支可正常 fetch + rebase 同步自身**。
    - 关联任何远程前,先经所有者确认。
 4. **推送凭据**:令牌放 `.env\credentials\`(已 gitignore),以单次 `-c credential.helper=…` 或 `GIT_ASKPASS`(脚本放 `.env\`)提供;禁止 Git Credential Manager(写主机凭据库,踩 §5 红线,确需启用走 5.3)。
-5. **网络备注**:本机直连 GitHub 间歇阻断(TCP 通、TLS 被重置),失败稍后重试即可;DSH 沙箱内 schannel 不可用,git 网络操作统一加 `-c http.sslBackend=openssl`。
+5. **网络备注**:git 网络操作受阻时重试即可;DSH 沙箱内 schannel 不可用,统一加 `-c http.sslBackend=openssl`。
 
 ## 3. 子项目布局与落位
 
