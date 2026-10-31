@@ -5,4 +5,4 @@
 
 | 配置项 | 用途 | 位置 / 设置方式 | 备注 |
 |---|---|---|---|
-| _(暂无)_ | | | |
+| GitHub 推送令牌 | avlon 推送认证(细粒度 PAT,仅 Contents 读写) | `.env\credentials\github.token`,经 `credhelper.cmd` 单次注入(不入 git、不落主机凭据库) | 2026-10-31 启用;泄露即于 GitHub 撤销 |

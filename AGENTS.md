@@ -6,9 +6,9 @@
 
 ## 0. 现状速览(易变区:只记事实,不立规则;状态变化仅更新本节)
 
-- 本地分支:**`Branch_OWN`**(HEAD,唯一分支,基点 `b1583ed`);远程 `origin` **未关联**。
-- 远程仓库 https://github.com/Arthur-772/avlon 现有:`Branch_DP`(即原 `main`,已冻结,见 §2)、`master`(默认分支,内容未审)。
-- 推送目标(待所有者发起):`Branch_OWN`。
+- 本地分支:**`Branch_OWN`**(HEAD,本主机工作分支)+ `master`(地基分支)。
+- 远程 `origin` **已关联**(https://github.com/Arthur-772/avlon):`master` = 初始化地基,`Branch_OWN` = 本主机分支(均已推送)。
+- 冻结:`Branch_DP`(即原 `main`,LMworkstation 历史内容)——不拉取/合并(见 §2.3)。
 
 ## 1. 工作区与权限
 
