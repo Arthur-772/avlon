@@ -24,7 +24,7 @@
    - 未经所有者明确要求不得 `push`;不得改写已推送历史、强推、变更远程配置;不得用 `pull`/`reset` 覆盖本地未提交改动。
    - 远程 `Branch_XXX` 冻结,禁止拉取/合并;`master` 等其余远程分支未经确认不得拉取。**唯一例外:已推送的 `Branch_OWN` 可正常 fetch + rebase 同步自身**。
    - 关联任何远程前,先经所有者确认。
-4. **推送凭据**:令牌放 `.env\credentials\`(已 gitignore),以单次 `-c credential.helper=…` 或 `GIT_ASKPASS`(脚本放 `.env\`)提供;禁止 Git Credential Manager(写主机凭据库,踩 §5 红线,确需启用走 5.3)。
+4. **推送凭据**:令牌放 `.env\credentials\`(已 gitignore)。**本机实测**:DSH 沙箱内 credential helper 与 askpass 均因 msys 管道限制不可用,推送采用 **URL 单次法**——运行时从令牌文件拼 `https://<user>:<token>@github.com/…` 一次性传入,**严禁**把令牌写入 git 配置、命令文本或日志;所有者本机终端推送走 `core.askpass`(已配 `.env\credentials\askpass.cmd`,读同一令牌)。禁止 Git Credential Manager(写主机凭据库,踩 §5 红线,确需启用走 5.3)。
 5. **网络备注**:本机直连 GitHub 间歇阻断(TCP 通、TLS 被重置),失败稍后重试即可;DSH 沙箱内 schannel 不可用,git 网络操作统一加 `-c http.sslBackend=openssl`。
 
 ## 3. 子项目布局与落位
